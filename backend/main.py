@@ -6741,6 +6741,22 @@ init_db()
 _init_extended_enterprise_tables()
 _init_dynamic_rbac_tables()
 
+FRONTEND_PUBLIC_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "frontend", "public")
+)
+if os.path.isdir(FRONTEND_PUBLIC_DIR):
+    from fastapi.responses import FileResponse
+
+    @app.get("/careers", include_in_schema=False)
+    def serve_careers_page() -> Any:
+        return FileResponse(os.path.join(FRONTEND_PUBLIC_DIR, "careers.html"))
+
+    @app.get("/login", include_in_schema=False)
+    def serve_login_page() -> Any:
+        return FileResponse(os.path.join(FRONTEND_PUBLIC_DIR, "login.html"))
+
+    app.mount("/", StaticFiles(directory=FRONTEND_PUBLIC_DIR, html=True), name="frontend_public")
+
 
 
 

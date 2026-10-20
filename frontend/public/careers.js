@@ -1,5 +1,6 @@
 const API_BASE =
-  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
+  window.location.port !== "8010"
     ? `http://${window.location.hostname}:8010`
     : "";
 
