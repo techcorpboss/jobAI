@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HireMind Global Careers — Cổng Việc Làm & Tuyển Dụng Chuẩn Quốc Tế (Vieclam24h • VietJobs • Global Standard)</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans + Inter + Be Vietnam Pro + Noto Sans (8 Languages) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Sans+Lao:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Inter"', '"Be Vietnam Pro"', '"Noto Sans Thai"', '"Noto Sans Lao"', '"Noto Sans Khmer"', '"Noto Sans KR"', '"Noto Sans JP"', '"Noto Sans SC"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body, button, input, select, textarea {
+      font-family: 'Plus Jakarta Sans', 'Inter', 'Be Vietnam Pro', 'Noto Sans Thai', 'Noto Sans Lao', 'Noto Sans Khmer', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      background-color: #F8FAFC;
+      color: #1E293B;
+      line-height: 1.65;
+      letter-spacing: -0.005em;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    /* Generous line-height & softer weights so Vietnamese & Asian diacritics never crowd */
+    h1, h2, h3, h4 {
+      line-height: 1.48 !important;
+      letter-spacing: -0.015em;
+      font-weight: 700 !important;
+    }
+    p, li {
+      line-height: 1.75 !important;
+    }
+    .font-extrabold {
+      font-weight: 700 !important;
+    }
+    html.dark body {
+      background-color: #0B1120;
+      color: #F1F5F9;
+    }
+    .portal-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .portal-card:hover {
+      border-color: #60A5FA;
+      box-shadow: 0 12px 28px -6px rgba(37, 99, 235, 0.10);
+      transform: translateY(-1px);
+    }
+    html.dark .portal-card {
+      background: #111827;
+      border-color: #1E293B;
+    }
+    .portal-card-active {
+      background: #F0F7FF !important;
+      border: 2px solid #2563EB !important;
+      box-shadow: 0 10px 26px -4px rgba(37, 99, 235, 0.14) !important;
+    }
+    html.dark .portal-card-active {
+      background: #172554 !important;
+      border: 2px solid #3B82F6 !important;
+    }
+    /* Mega Menu Hover Trigger (VietJobs & Vieclam24h Standard) */
+    .mega-nav-item:hover .mega-dropdown-panel {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .mega-dropdown-panel {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(6px);
+      pointer-events: none;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.45);
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.7);
+    }
+    /* Executive Hero Mesh Background */
+    .portal-hero-mesh {
+      background-color: #061539;
+      background-image:
+        radial-gradient(at 10% 15%, rgba(37, 99, 235, 0.48) 0px, transparent 50%),
+        radial-gradient(at 90% 15%, rgba(13, 148, 136, 0.35) 0px, transparent 48%),
+        radial-gradient(at 75% 85%, rgba(99, 102, 241, 0.40) 0px, transparent 52%),
+        radial-gradient(at 20% 90%, rgba(14, 165, 233, 0.28) 0px, transparent 50%);
+    }
+    /* Global Executive Modal Form Upgrade — Spacious, Modern, High-Contrast */
+    #portal-modal-content {
+      font-size: 0.925rem !important;
+      line-height: 1.65 !important;
+    }
+    #portal-modal-content .text-xs {
+      font-size: 0.9rem !important;
+      line-height: 1.6 !important;
+    }
+    #portal-modal-content h3 {
+      font-size: 1.35rem !important;
+      line-height: 1.35 !important;
+      letter-spacing: -0.015em !important;
+    }
+    #portal-modal-content label {
+      font-size: 0.875rem !important;
+      font-weight: 700 !important;
+      color: #1E293B;
+      margin-bottom: 0.375rem !important;
+      display: block;
+    }
+    html.dark #portal-modal-content label {
+      color: #E2E8F0;
+    }
+    #portal-modal-content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    #portal-modal-content select,
+    #portal-modal-content textarea {
+      min-height: 46px !important;
+      padding: 0.7rem 1rem !important;
+      font-size: 0.925rem !important;
+      border-radius: 0.875rem !important;
+      border: 1.5px solid #CBD5E1 !important;
+      background-color: #F8FAFC !important;
+      transition: all 0.18s ease !important;
+    }
+    #portal-modal-content input:focus,
+    #portal-modal-content select:focus,
+    #portal-modal-content textarea:focus {
+      outline: none !important;
+      border-color: #2563EB !important;
+      background-color: #FFFFFF !important;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14) !important;
+    }
+    html.dark #portal-modal-content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    html.dark #portal-modal-content select,
+    html.dark #portal-modal-content textarea {
+      background-color: #1E293B !important;
+      border-color: #334155 !important;
+      color: #F8FAFC !important;
+    }
+    #portal-modal-content button[type="submit"] {
+      min-height: 50px !important;
+      font-size: 0.975rem !important;
+      font-weight: 700 !important;
+      border-radius: 0.875rem !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+
+  <!-- 1. EXECUTIVE TOP UTILITY & REGIONAL SWITCHER BAR (Full-Width Left-Aligned Single-Line Standard) -->
+  <div class="bg-[#061539] text-slate-200 border-b border-blue-900/70 text-[11px]">
+    <div class="w-full px-3 sm:px-5 py-1.5 flex items-center justify-between gap-2 whitespace-nowrap overflow-x-auto custom-scroll">
+      <!-- Left Group: Aligned directly to the left corner -->
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="inline-flex items-center gap-1.5 font-semibold text-emerald-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+          <span id="top-bar-ai-status">Ứng tuyển 1 chạm • AI Sàng lọc & Phỏng vấn 24/7</span>
+        </span>
+        <span class="text-blue-800">|</span>
+        <!-- Quick Macro-Region Switcher -->
+        <div class="flex items-center gap-1 text-[11px]">
+          <span id="top-bar-region-label" class="text-blue-200/80 font-medium">Vùng:</span>
+          <button onclick="selectMacroRegion('all')" id="macro-reg-all" class="px-2 py-0.5 rounded-md bg-blue-600 text-white font-semibold transition">Toàn quốc</button>
+          <button onclick="selectMacroRegion('Miền Bắc')" id="macro-reg-north" class="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-blue-100 border border-white/15 font-medium transition">Miền Bắc</button>
+          <button onclick="selectMacroRegion('Miền Trung')" id="macro-reg-central" class="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-blue-100 border border-white/15 font-medium transition">Miền Trung</button>
+          <button onclick="selectMacroRegion('Miền Nam')" id="macro-reg-south" class="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-blue-100 border border-white/15 font-medium transition">Miền Nam</button>
+          <button onclick="selectMacroRegion('Quốc tế / ASEAN')" id="macro-reg-asean" class="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-blue-100 border border-white/15 font-medium transition">ASEAN</button>
+        </div>
+      </div>
+
+      <!-- Right Group: Balanced Single-Line Executive Action Pills -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button onclick="openPublicTrafficStatsModal()" class="px-2 py-0.5 rounded-md bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/50 text-emerald-200 font-bold flex items-center gap-1 transition" title="Thống kê Lượt truy cập, Doanh nghiệp đăng ký & Cá nhân ứng tuyển">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span id="top-bar-traffic-btn">📊 Thống kê Truy cập</span>
+        </button>
+        <button onclick="openVipMechanismModal()" class="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/25 to-yellow-500/25 hover:from-amber-500/40 hover:to-yellow-500/40 border border-amber-400/50 text-amber-200 font-bold flex items-center gap-1 transition">
+          <span>👑</span>
+          <span id="top-bar-vip-btn">Cấp độ VIP & QC</span>
+        </button>
+        <button onclick="openLocationManagerModal()" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/15 border border-white/10 text-cyan-300 hover:text-white font-semibold flex items-center gap-1 transition">
+          <span>📍</span>
+          <span id="top-bar-loc-btn">63 Tỉnh/Thành</span>
+        </button>
+        <button onclick="openAiTranslatorModal()" id="btn-ai-translator"
+          class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/15 border border-white/10 text-emerald-300 hover:text-white font-semibold flex items-center gap-1 transition"
+          title="AI Localization Studio">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="lbl-ai-translator">🤖 AI Dịch 100%</span>
+        </button>
+        <div class="flex items-center gap-1 bg-white/10 border border-white/15 rounded-md px-1.5 py-0.5">
+          <span class="text-[10px]">🌐</span>
+          <select id="portal-lang-select" onchange="changePortalLang(this.value)"
+            class="bg-transparent text-[11px] font-bold text-white focus:outline-none cursor-pointer">
+            <option value="vi" class="text-slate-900">[VI] Tiếng Việt</option>
+            <option value="en" class="text-slate-900">[EN] English</option>
+            <option value="ja" class="text-slate-900">[JA] 日本語</option>
+            <option value="ko" class="text-slate-900">[KO] 한국어</option>
+            <option value="zh" class="text-slate-900">[ZH] 中文</option>
+            <option value="th" class="text-slate-900">[TH] ภาษาไทย</option>
+            <option value="lo" class="text-slate-900">[LO] ພາສາລາວ</option>
+            <option value="km" class="text-slate-900">[KM] ភាសាខ្មែរ</option>
+          </select>
+        </div>
+        <button onclick="togglePortalTheme()"
+          class="px-1.5 py-0.5 rounded-md border border-white/15 bg-white/10 hover:bg-white/20 text-[11px] font-medium text-white transition"
+          title="Dark / Light Mode">
+          ☀️/🌙
+        </button>
+        <a href="/index.html?tab=ads" class="px-2 py-0.5 rounded-md bg-amber-500/25 hover:bg-amber-500/40 border border-amber-400/50 text-amber-200 font-bold transition flex items-center gap-1">
+          <span id="top-bar-ads-btn">📢 Tạo Quảng cáo</span>
+        </a>
+        <a href="/index.html" id="footer-ats-link" class="px-2.5 py-0.5 rounded-md bg-indigo-500/35 hover:bg-indigo-500/55 border border-indigo-400/50 text-cyan-200 font-bold transition flex items-center gap-1">
+          <span>🏢 Quản trị ATS &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MAIN STICKY HEADER — FULL-WIDTH LEFT-ALIGNED EXECUTIVE NAVBAR -->
+  <header class="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 shadow-[0_2px_20px_-4px_rgba(15,23,42,0.06)]">
+    <div class="w-full px-3 sm:px-5 h-[68px] flex items-center justify-between gap-3">
+
+      <!-- Left: Luxury Brand Identity (Aligned directly to left corner) -->
+      <a href="/careers.html" class="flex items-center gap-3 group shrink-0">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-blue-600/20 group-hover:scale-105 transition">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="leading-tight">
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-[17px] tracking-tight text-slate-900 dark:text-white">
+              HireMind <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Global</span>
+            </span>
+            <span id="ui-badge-portal" class="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+              AI CLOUD
+            </span>
+          </div>
+          <p id="ui-sub-portal" class="text-[11px] font-medium text-slate-500 dark:text-slate-400 hidden sm:block">
+            Executive Talent & Enterprise ATS
+          </p>
+        </div>
+      </a>
+
+      <!-- Center-Left: Minimalist Single-Line Vector Navigation (Shifted towards left next to brand logo) -->
+      <nav class="hidden lg:flex items-center gap-1 whitespace-nowrap ml-2 xl:ml-5 mr-auto">
+        <!-- Nav 1: Việc làm (with Mega-Menu Dropdown) -->
+        <div class="relative mega-nav-item">
+          <button onclick="switchPortalSection('jobs')" id="nav-portal-jobs"
+            class="px-3.5 py-2 rounded-xl text-[13px] font-semibold bg-blue-50/90 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 transition flex items-center gap-2">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+            <span id="lbl-nav-jobs">Việc làm</span>
+            <span id="badge-count-jobs" class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-600 text-white font-mono leading-none">30</span>
+            <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+
+          <!-- Mega Dropdown: Nghề nghiệp theo danh mục -->
+          <div class="mega-dropdown-panel absolute left-0 top-full mt-2 w-[640px] max-w-[92vw] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-5 z-50 whitespace-normal">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5 mb-3">
+              <span id="mega-cat-title" class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Danh mục Nghề nghiệp & Cấp bậc Quản lý</span>
+              <button id="mega-cat-viewall" onclick="switchPortalSection('categories')" class="text-xs font-semibold text-blue-600 hover:underline">Xem tất cả 10 ngành &rarr;</button>
+            </div>
+            <div id="header-mega-categories" class="grid grid-cols-2 gap-2 text-xs"></div>
+            <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-2">
+                <button id="mega-cat-senior" onclick="updatePortalFilter('lvl', 'senior'); switchPortalSection('jobs');" class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-semibold">Quản lý Cấp cao (C-Level / Director)</button>
+                <button id="mega-cat-middle" onclick="updatePortalFilter('lvl', 'middle'); switchPortalSection('jobs');" class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 font-semibold">Quản lý Cấp trung (Head / Manager)</button>
+              </div>
+              <button id="mega-cat-reset" onclick="resetAllPortalFilters(); switchPortalSection('jobs');" class="text-blue-600 font-semibold hover:underline">Tất cả việc làm</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nav 2: Khu vực -->
+        <div class="relative mega-nav-item">
+          <button onclick="scrollToPortalBlock('section-regional-hubs')" id="nav-portal-locations"
+            class="px-3.5 py-2 rounded-xl text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-slate-800 transition flex items-center gap-2">
+            <svg class="w-4 h-4 shrink-0 text-teal-600 dark:text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span id="lbl-nav-locations">Khu vực</span>
+            <span id="badge-count-locs" class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200/70 dark:bg-teal-950 dark:text-teal-300 font-mono leading-none">12</span>
+            <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+
+          <div class="mega-dropdown-panel absolute left-0 top-full mt-2 w-[620px] max-w-[92vw] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-5 z-50 whitespace-normal">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5 mb-3">
+              <span id="mega-loc-title" class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Khu vực Kinh tế Trọng điểm & 63 Tỉnh/Thành</span>
+              <button id="mega-loc-manage" onclick="openLocationManagerModal()" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 text-[11px] font-semibold hover:bg-indigo-100">
+                + Tạo / Quản lý Khu vực
+              </button>
+            </div>
+            <div id="header-mega-locations" class="grid grid-cols-3 gap-2 text-xs"></div>
+          </div>
+        </div>
+
+        <!-- Nav 3: Ngành nghề -->
+        <button onclick="switchPortalSection('categories')" id="nav-portal-categories"
+          class="px-3.5 py-2 rounded-xl text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-slate-800 transition flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+          </svg>
+          <span id="lbl-nav-categories">Ngành nghề</span>
+          <span id="badge-count-cats" class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono leading-none">10</span>
+        </button>
+
+        <!-- Nav 4: Công ty -->
+        <button onclick="switchPortalSection('employers')" id="nav-portal-employers"
+          class="px-3.5 py-2 rounded-xl text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-slate-800 transition flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18"></path>
+            <path d="M5 21V7l8-4v18"></path>
+            <path d="M19 21V11l-6-4"></path>
+            <path d="M9 9h.01"></path>
+            <path d="M9 13h.01"></path>
+            <path d="M9 17h.01"></path>
+          </svg>
+          <span id="lbl-nav-employers">Công ty</span>
+          <span id="badge-count-emps" class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono leading-none">6</span>
+        </button>
+
+        <!-- Nav 5: Lương & CV -->
+        <button onclick="switchPortalSection('tools')" id="nav-portal-tools"
+          class="px-3.5 py-2 rounded-xl text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-slate-800 transition flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <line x1="8" y1="6" x2="16" y2="6"></line>
+            <line x1="16" y1="14" x2="16" y2="18"></line>
+            <path d="M16 10h.01"></path>
+            <path d="M12 10h.01"></path>
+            <path d="M8 10h.01"></path>
+            <path d="M12 14h.01"></path>
+            <path d="M8 14h.01"></path>
+            <path d="M12 18h.01"></path>
+            <path d="M8 18h.01"></path>
+          </svg>
+          <span id="lbl-nav-tools">Lương & CV</span>
+        </button>
+
+        <!-- Nav 6: Hồ sơ -->
+        <button onclick="switchPortalSection('my_apps')" id="nav-portal-my_apps"
+          class="px-3.5 py-2 rounded-xl text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-slate-800 transition flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span id="lbl-nav-myapps">Hồ sơ</span>
+          <span id="badge-count-saved" class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-mono leading-none">2</span>
+        </button>
+      </nav>
+
+      <!-- Right Action Controls: Sleek Profile Chip / Auth + VIP Badge + Executive Post Job Button -->
+      <div class="flex items-center gap-2 shrink-0">
+        <div id="auth-status-bar" class="flex items-center gap-2"></div>
+
+        <button onclick="openVipMechanismModal()" id="btn-header-vip-priv" title="Cơ chế Ưu tiên Tài khoản VIP & Quảng cáo Banner"
+          class="hidden xl:flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700 text-xs font-extrabold shadow-sm transition whitespace-nowrap">
+          <span>👑</span>
+          <span id="lbl-header-vip-priv">Đặc quyền VIP</span>
+        </button>
+
+        <button onclick="openQuickPostJobModal()" id="btn-header-post-job"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-bold shadow-sm hover:shadow-md transition whitespace-nowrap">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span id="lbl-header-post-job">Đăng tuyển</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. MAIN INTELLIGENT PORTAL WORKSPACE WITH LEFT & RIGHT SKYSCRAPER AD WINGS -->
+  <div class="flex-1 w-full px-3 sm:px-5 py-5">
+    <!-- Mobile/Tablet Responsive VIP Ad Banner Strip (Visible on < lg screens) -->
+    <div id="public-mobile-ad-strip" class="lg:hidden mb-5"></div>
+
+    <div class="flex items-start gap-3.5 xl:gap-5">
+      <!-- LEFT SKYSCRAPER AD WING (Banner Quảng cáo Bên Trái - Sticky xuyên suốt đến hết Footer) -->
+      <aside id="public-left-ad-wing" aria-label="Banner Quảng cáo Bên Trái"
+        class="hidden lg:flex flex-col gap-3 w-[188px] xl:w-[216px] shrink-0 sticky top-[84px] max-h-[calc(100vh-96px)] overflow-y-auto custom-scroll z-20 pb-4">
+      </aside>
+
+      <!-- CENTER PORTAL CONTENT + EXECUTIVE FOOTER (Giúp 2 cột Banner Trái/Phải luôn cố định ngay cả khi cuộn xuống hết Footer) -->
+      <div class="flex-1 min-w-0 space-y-10">
+        <main class="space-y-8">
+          <div id="portal-main-content" class="space-y-8"></div>
+        </main>
+
+        <!-- 5. INTERNATIONAL 5-COLUMN EXECUTIVE FOOTER (VietnamWorks / Navigos Standard) -->
+        <footer id="public-main-footer" class="bg-[#061A40] dark:bg-[#041028] text-slate-200 rounded-3xl border border-blue-900/60 pt-8 pb-20 px-4 sm:px-8 space-y-8 shadow-2xl">
+          <!-- VIP Ad Banners Showcase inside Footer (Hiển thị trực quan các Chiến dịch Quảng cáo VIP tại Footer) -->
+          <div id="footer-ad-banners-showcase" class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950 border border-amber-400/40 shadow-lg">
+          </div>
+
+          <!-- Real-Time Daily Traffic, Enterprise Member Registrations & Candidate Applications Telemetry Bar -->
+          <div id="footer-live-traffic-bar" class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#081F4D] via-[#0D2B6B] to-[#081F4D] border border-cyan-500/30 shadow-lg">
+          </div>
+
+          <!-- Localized Footer Content Body (Hotline Strip + 5-Column Directory + Copyright) -->
+          <div id="footer-localized-body" class="space-y-8">
+          <!-- Top Hotline & Quick Support Strip -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 sm:p-5 rounded-2xl bg-[#0A2558]/90 border border-blue-800/70 text-xs shadow-inner">
+        <div class="space-y-1">
+          <div class="text-[11px] font-semibold uppercase text-cyan-300">📞 Hotline Hỗ trợ Miền Nam</div>
+          <div class="text-sm font-bold text-white">(028) 7108 2424</div>
+          <div class="text-[11px] text-blue-200/75">TP.HCM • Bình Dương • Đồng Nai • Cần Thơ</div>
+        </div>
+        <div class="space-y-1">
+          <div class="text-[11px] font-semibold uppercase text-cyan-300">📞 Hotline Hỗ trợ Miền Bắc & Trung</div>
+          <div class="text-sm font-bold text-white">(024) 7308 2424</div>
+          <div class="text-[11px] text-blue-200/75">Hà Nội • Hải Phòng • Bắc Ninh • Đà Nẵng</div>
+        </div>
+        <div class="space-y-1">
+          <div class="text-[11px] font-semibold uppercase text-emerald-300">🤖 Tổng đài AI & Tư vấn B2B 24/7</div>
+          <div class="text-sm font-bold text-white">ntd@hiremind.global</div>
+          <div class="text-[11px] text-blue-200/75">Cấp phát Tenant ATS & Sàng lọc Hồ sơ Tự động</div>
+        </div>
+        <div class="flex items-center justify-start md:justify-end gap-2 flex-wrap">
+          <button onclick="toggleSupportChatbot(true)" class="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-sm transition flex items-center gap-1.5">
+            <span>💬</span>
+            <span>Chat CSKH 24/7</span>
+          </button>
+          <button onclick="openQuickPostJobModal()" class="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-sm transition">
+            📢 Đăng tuyển dụng
+          </button>
+        </div>
+      </div>
+
+      <!-- Main 5-Column Functional Directory (Exact Structure from Reference Image) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 text-[13px]">
+        <!-- COLUMN 1 (3 Cols): Về HireMind Global -->
+        <div class="lg:col-span-3 space-y-3">
+          <h4 class="font-bold text-white text-sm tracking-wide">HireMind Global</h4>
+          <ul class="space-y-2 text-blue-200/85">
+            <li><button onclick="openFunctionalPageModal('about')" class="hover:text-white hover:underline transition text-left">Về HireMind Global</button></li>
+            <li><button onclick="openFunctionalPageModal('intech')" class="hover:text-white hover:underline transition text-left">Về HireMind inTECH & AI Cloud</button></li>
+            <li><button onclick="openFunctionalPageModal('contact')" class="hover:text-white hover:underline transition text-left">Liên Hệ</button></li>
+            <li><button onclick="openFunctionalPageModal('faq')" class="hover:text-white hover:underline transition text-left">Hỏi Đáp (FAQ)</button></li>
+            <li><button onclick="openFunctionalPageModal('terms')" class="hover:text-white hover:underline transition text-left">Thỏa Thuận Sử Dụng</button></li>
+            <li><button onclick="openFunctionalPageModal('privacy')" class="hover:text-white hover:underline transition text-left">Quy Định Bảo Mật</button></li>
+            <li>
+              <button onclick="openFunctionalPageModal('ecommerce_policy')" class="hover:text-white hover:underline transition text-left leading-snug">
+                Quy Chế Hoạt Động Sàn Giao Dịch Thương Mại Điện Tử HireMind Global
+              </button>
+            </li>
+            <li><button onclick="openFunctionalPageModal('sitemap')" class="hover:text-white hover:underline transition text-left">Sơ Đồ Trang Web (Sitemap)</button></li>
+          </ul>
+        </div>
+
+        <!-- COLUMN 2 (2 Cols): Dành cho Nhà tuyển dụng -->
+        <div class="lg:col-span-2 space-y-3">
+          <h4 class="font-bold text-white text-sm tracking-wide">Dành cho Nhà tuyển dụng</h4>
+          <ul class="space-y-2 text-blue-200/85">
+            <li><button onclick="openQuickPostJobModal()" class="hover:text-white hover:underline transition text-left">Đăng tuyển dụng</button></li>
+            <li><button onclick="openFunctionalPageModal('resume_search')" class="hover:text-white hover:underline transition text-left">Tìm kiếm hồ sơ</button></li>
+            <li><button onclick="openFunctionalPageModal('market_report')" class="hover:text-white hover:underline transition text-left">Báo cáo thị trường tuyển dụng</button></li>
+            <li><a href="/index.html" class="hover:text-white hover:underline transition block">Hệ thống Quản trị ATS</a></li>
+            <li><button onclick="openEmployerAuthModal('register')" class="hover:text-white hover:underline transition text-left">Đăng ký Tenant Doanh nghiệp</button></li>
+            <li><button onclick="openFunctionalPageModal('contact_b2b')" class="hover:text-white hover:underline transition text-left">Liên hệ</button></li>
+          </ul>
+        </div>
+
+        <!-- COLUMN 3 (2 Cols): Việc làm theo khu vực -->
+        <div class="lg:col-span-2 space-y-3">
+          <h4 class="font-bold text-white text-sm tracking-wide">Việc làm theo khu vực</h4>
+          <ul class="space-y-2 text-blue-200/85">
+            <li><button onclick="updatePortalFilter('loc', 'hcmc'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Hồ Chí Minh</button></li>
+            <li><button onclick="updatePortalFilter('loc', 'hanoi'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Hà Nội</button></li>
+            <li><button onclick="updatePortalFilter('loc', 'haiphong'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Hải Phòng</button></li>
+            <li><button onclick="updatePortalFilter('loc', 'danang'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Đà Nẵng</button></li>
+            <li><button onclick="updatePortalFilter('loc', 'cantho'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Cần Thơ</button></li>
+            <li><button onclick="updatePortalFilter('loc', 'binhduong'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Bình Dương & Bắc Ninh</button></li>
+          </ul>
+          <div class="pt-2">
+            <button onclick="scrollToPortalBlock('section-regional-hubs')" class="inline-flex items-center gap-1.5 text-cyan-300 hover:text-white font-semibold transition">
+              <span>Xem tất cả khu vực</span>
+              <span class="text-base leading-none">&rsaquo;</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- COLUMN 4 (2 Cols): Việc làm theo ngành nghề -->
+        <div class="lg:col-span-2 space-y-3">
+          <h4 class="font-bold text-white text-sm tracking-wide">Việc làm theo ngành nghề</h4>
+          <ul class="space-y-2 text-blue-200/85">
+            <li><button onclick="applyQuickTrendingSearch('Kế toán')" class="hover:text-white hover:underline transition text-left">Kế toán</button></li>
+            <li><button onclick="updatePortalFilter('cat', 'Tài chính, Ngân hàng & Đầu tư (BFSI)'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Ngân hàng</button></li>
+            <li><button onclick="updatePortalFilter('cat', 'Công nghệ Thông tin, AI & Chuyển đổi số'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Phần mềm máy tính</button></li>
+            <li><button onclick="applyQuickTrendingSearch('Cloud')" class="hover:text-white hover:underline transition text-left">IT Support / Help Desk</button></li>
+            <li><button onclick="updatePortalFilter('cat', 'Bất động sản, Xây dựng & Hạ tầng'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Xây dựng</button></li>
+            <li><button onclick="updatePortalFilter('cat', 'Sản xuất Công nghiệp, Điện tử & FDI'); scrollToPortalBlock('section-job-explorer');" class="hover:text-white hover:underline transition text-left">Sản xuất & Chế tạo FDI</button></li>
+          </ul>
+          <div class="pt-2">
+            <button onclick="scrollToPortalBlock('section-job-explorer')" class="inline-flex items-center gap-1.5 text-cyan-300 hover:text-white font-semibold transition">
+              <span>Tìm việc làm</span>
+              <span class="text-base leading-none">&rsaquo;</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- COLUMN 5 (3 Cols): Ứng dụng di động, Chứng nhận Bộ Công Thương & Mạng xã hội -->
+        <div class="lg:col-span-3 space-y-5">
+          <!-- Mobile App Store Badges -->
+          <div class="space-y-2.5">
+            <h4 class="font-bold text-white text-sm tracking-wide">Ứng dụng di động</h4>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <!-- App Store Button -->
+              <button onclick="openFunctionalPageModal('mobile_app')"
+                class="px-3.5 py-2 rounded-lg bg-black hover:bg-slate-900 border border-slate-500/80 text-white flex items-center gap-2.5 transition shadow-sm">
+                <svg class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/></svg>
+                <div class="text-left leading-tight">
+                  <div class="text-[9px] text-slate-300">Tải về trên</div>
+                  <div class="text-xs font-bold">App Store</div>
+                </div>
+              </button>
+
+              <!-- Google Play Button -->
+              <button onclick="openFunctionalPageModal('mobile_app')"
+                class="px-3.5 py-2 rounded-lg bg-black hover:bg-slate-900 border border-slate-500/80 text-white flex items-center gap-2.5 transition shadow-sm">
+                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M3.6 2.4c-.3.3-.5.8-.5 1.4v16.4c0 .6.2 1.1.5 1.4l.1.1 9.2-9.2v-.2L3.7 2.3l-.1.1z"/><path fill="#FBBC05" d="M16 15.4l-3.1-3.1v-.2L16 9l.1.1 3.6 2.1c1 .6 1 1.5 0 2.1l-3.6 2.1-.1 0z"/><path fill="#EA4335" d="M16.1 15.3L12.9 12 3.6 21.3c.3.4.9.4 1.6 0l10.9-6z"/><path fill="#34A853" d="M16.1 8.7L5.2 2.7c-.7-.4-1.3-.4-1.6 0l9.3 9.3 3.2-3.3z"/></svg>
+                <div class="text-left leading-tight">
+                  <div class="text-[9px] text-slate-300">TẢI NỘI DUNG TRÊN</div>
+                  <div class="text-xs font-bold">Google Play</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Ministry of Industry and Trade Certification Badge -->
+          <div class="space-y-2">
+            <h4 class="font-bold text-white text-sm tracking-wide">Chứng nhận bởi</h4>
+            <div class="flex items-center gap-3">
+              <button onclick="openFunctionalPageModal('ecommerce_policy')"
+                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white border-2 border-white/90 shadow-md hover:scale-105 transition">
+                <span class="w-6 h-6 rounded-full bg-white text-red-600 font-bold flex items-center justify-center text-xs">✓</span>
+                <div class="text-left leading-tight">
+                  <div class="text-[10px] font-bold uppercase tracking-wider">ĐÃ ĐĂNG KÝ</div>
+                  <div class="text-[9px] font-semibold">BỘ CÔNG THƯƠNG</div>
+                </div>
+              </button>
+              <button onclick="openFunctionalPageModal('privacy')"
+                class="px-2.5 py-1.5 rounded-xl bg-blue-900/70 border border-blue-700 text-[10px] font-semibold text-cyan-300 hover:bg-blue-900 transition">
+                🔒 ISO/IEC 27001<br/>NĐ 13/2023/NĐ-CP
+              </button>
+            </div>
+          </div>
+
+          <!-- Social Media Follow Icons -->
+          <div class="space-y-2">
+            <h4 class="font-bold text-white text-sm tracking-wide">Theo dõi HireMind Global trên</h4>
+            <div class="flex items-center gap-2.5">
+              <button onclick="openFunctionalPageModal('contact')" title="Facebook Official"
+                class="w-8 h-8 rounded-full bg-[#1877F2] hover:opacity-90 text-white font-bold text-xs flex items-center justify-center shadow transition">
+                f
+              </button>
+              <button onclick="openFunctionalPageModal('contact')" title="LinkedIn Executive Network"
+                class="w-8 h-8 rounded-full bg-[#0A66C2] hover:opacity-90 text-white font-bold text-xs flex items-center justify-center shadow transition">
+                in
+              </button>
+              <button onclick="openFunctionalPageModal('contact')" title="TikTok Career Channel"
+                class="w-8 h-8 rounded-full bg-black border border-slate-600 hover:opacity-90 text-white font-bold text-xs flex items-center justify-center shadow transition">
+                ♪
+              </button>
+              <button onclick="openFunctionalPageModal('contact')" title="YouTube HR Nexus"
+                class="w-8 h-8 rounded-full bg-[#FF0000] hover:opacity-90 text-white font-bold text-xs flex items-center justify-center shadow transition">
+                ▶
+              </button>
+              <button onclick="openFunctionalPageModal('contact')" title="Spotify Career Podcast"
+                class="w-8 h-8 rounded-full bg-[#1DB954] hover:opacity-90 text-white font-bold text-xs flex items-center justify-center shadow transition">
+                )))
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Centered Corporate Copyright & Registered Address (Exact Match with Reference Image) -->
+      <div class="pt-6 border-t border-blue-900/70 text-center space-y-1 text-[11px] text-blue-200/60">
+        <div class="font-medium text-blue-100/80">
+          Copyright © Công Ty Cổ Phần Công Nghệ Tuyển Dụng Quốc Tế HireMind Global Việt Nam
+        </div>
+        <div>
+          Tầng 20, Tòa nhà E.Town Central, 11 Đoàn Văn Bơ, Phường 13, Quận 4, TP.HCM • Tòa nhà Lotte Center, 54 Liễu Giai, Quận Ba Đình, Hà Nội, Việt Nam
+        </div>
+      </div>
+
+      <!-- Bottom Sub-Brand Ecosystem Bar (HireMind Global • HireMind inTECH • Powered by Navigos/MotAPIs Standard) -->
+      <div class="pt-5 border-t border-blue-900/70 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+        <div class="flex items-center gap-6 flex-wrap">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 text-slate-950 font-bold flex items-center justify-center text-xs">HM</span>
+            <span class="font-bold text-white">© HireMindWorks</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-cyan-300 font-semibold">
+            <span>hiremind</span>
+            <span class="px-1.5 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/40 text-[10px] font-mono">inTECH</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-blue-200/80">
+            <span class="text-[11px]">Powered by</span>
+            <span class="font-bold text-white tracking-wider">MOTAPIS &bull; GLOBAL AI CLOUD</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 flex-wrap text-[11px] text-blue-200/80">
+          <button onclick="openLocationManagerModal()" class="hover:text-white hover:underline">📍 63 Tỉnh/Thành & ASEAN</button>
+          <span>•</span>
+          <button onclick="switchPortalSection('tools')" class="hover:text-white hover:underline">🧮 Công cụ Gross-Net</button>
+          <span>•</span>
+          <a href="/index.html" class="text-cyan-300 hover:text-white font-semibold hover:underline" id="footer-ats-link-bottom">Enterprise ATS &rarr;</a>
+        </div>
+      </div>
+          </div>
+        </footer>
+      </div>
+
+      <!-- RIGHT SKYSCRAPER AD WING (Banner Quảng cáo Bên Phải - Sticky xuyên suốt đến hết Footer) -->
+      <aside id="public-right-ad-wing" aria-label="Banner Quảng cáo Bên Phải"
+        class="hidden lg:flex flex-col gap-3 w-[188px] xl:w-[216px] shrink-0 sticky top-[84px] max-h-[calc(100vh-96px)] overflow-y-auto custom-scroll z-20 pb-4">
+      </aside>
+    </div>
+  </div>
+
+  <!-- 5B. FIXED BOTTOM FOOTER AD BANNER & LIVE TELEMETRY DOCK (Cố định Thanh Footer Quảng cáo khi cuộn trang) -->
+  <div id="sticky-bottom-ad-footer" class="fixed bottom-0 inset-x-0 z-30 bg-[#041028]/95 backdrop-blur-xl border-t-2 border-amber-400/70 text-white shadow-[0_-10px_35px_rgba(0,0,0,0.45)] transition-all duration-300">
+  </div>
+
+  <!-- 4. FLOATING QUICK-FIND NAVIGATION WIDGET (VietJobs jcQuickFindBtn Standard) -->
+  <div class="fixed bottom-16 left-5 z-40">
+    <div id="quickfind-panel" class="hidden mb-2.5 w-72 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-4 space-y-2.5 text-xs">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+        <div>
+          <h4 id="qf-panel-title" class="font-bold text-slate-900 dark:text-white text-xs">⚡ Tìm nhanh (Quick Find)</h4>
+          <p id="qf-panel-sub" class="text-[11px] text-slate-500">Di chuyển tức thì tới phân khu bạn cần</p>
+        </div>
+        <button onclick="toggleQuickFindPanel()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+      <div class="grid grid-cols-1 gap-1.5">
+        <button id="qf-item-1" onclick="scrollToPortalBlock('section-hero-search'); toggleQuickFindPanel();" class="text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium transition">🔍 Thanh tìm kiếm & Bộ lọc nâng cao</button>
+        <button id="qf-item-2" onclick="scrollToPortalBlock('section-live-board'); toggleQuickFindPanel();" class="text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium transition">📡 Bảng tin Việc làm Trực tuyến (Live Ticker)</button>
+        <button id="qf-item-3" onclick="scrollToPortalBlock('section-job-explorer'); toggleQuickFindPanel();" class="text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium transition">💼 Danh sách Việc làm & Hồ sơ 360°</button>
+        <button id="qf-item-4" onclick="scrollToPortalBlock('section-featured-employers'); toggleQuickFindPanel();" class="text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium transition">🏢 Nhà Tuyển Dụng Nổi Bật Đang Tuyển</button>
+        <button id="qf-item-5" onclick="scrollToPortalBlock('section-regional-hubs'); toggleQuickFindPanel();" class="text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium transition">📍 Việc làm theo Khu vực & 63 Tỉnh/Thành</button>
+        <button id="qf-item-6" onclick="scrollToPortalBlock('section-category-matrix'); toggleQuickFindPanel();" class="text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium transition">📊 Việc làm theo Danh mục Nghề nghiệp</button>
+        <button id="qf-item-7" onclick="scrollToPortalBlock('public-main-footer'); toggleQuickFindPanel();" class="text-left px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold transition">👑 Chân trang & Banner Quảng cáo VIP</button>
+        <button id="qf-item-8" onclick="switchPortalSection('tools'); toggleQuickFindPanel();" class="text-left px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold transition">🧮 Công cụ Tính lương Gross ⇄ Net & AI CV</button>
+      </div>
+    </div>
+    <button onclick="toggleQuickFindPanel()"
+      class="px-4 py-2.5 rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-blue-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-blue-500 text-xs font-semibold flex items-center gap-2 transition">
+      <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
+      <span id="qf-btn-label">⚡ Quick Find / Tìm nhanh</span>
+    </button>
+  </div>
+
+  <!-- 6. FLOATING ZALO & 24/7 AI CUSTOMER CARE CHATBOT WIDGET -->
+  <div class="fixed bottom-16 right-5 z-40 flex flex-col items-end gap-2.5">
+    <!-- Expandable 24/7 AI Customer Care Chat Window -->
+    <div id="support-chatbot-panel" class="hidden w-[360px] sm:w-[395px] max-w-[94vw] bg-white dark:bg-slate-900 rounded-3xl border border-blue-200 dark:border-slate-700 shadow-2xl overflow-hidden flex flex-col">
+      <!-- Chat Header -->
+      <div class="p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 text-white flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-lg font-bold">
+            🤖
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h4 id="chat-hdr-title" class="font-bold text-xs sm:text-sm text-white leading-none">Trợ lý AI CSKH 24/7</h4>
+              <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+            </div>
+            <p id="chat-hdr-sub" class="text-[11px] text-blue-100 mt-0.5">Tư vấn Việc làm • Lương Gross-Net • Hỗ trợ NTD</p>
+          </div>
+        </div>
+        <button onclick="toggleSupportChatbot(false)" class="w-7 h-7 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center text-xs font-bold">
+          ✕
+        </button>
+      </div>
+
+      <!-- Quick Action Chips -->
+      <div class="px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200/80 dark:border-slate-700 flex items-center gap-1.5 overflow-x-auto custom-scroll text-[11px]">
+        <button id="chat-chip-1" onclick="sendQuickConciergePrompt('Gợi ý việc làm Quản lý lương cao')" class="px-2.5 py-1 rounded-full bg-white dark:bg-slate-900 border border-blue-200 dark:border-slate-700 text-blue-700 dark:text-blue-300 font-semibold shrink-0 hover:bg-blue-50">💼 Việc lương cao</button>
+        <button id="chat-chip-2" onclick="sendQuickConciergePrompt('Tính lương Gross sang Net 65 triệu')" class="px-2.5 py-1 rounded-full bg-white dark:bg-slate-900 border border-emerald-200 dark:border-slate-700 text-emerald-700 dark:text-emerald-300 font-semibold shrink-0 hover:bg-emerald-50">🧮 Tính Gross-Net</button>
+        <button id="chat-chip-3" onclick="sendQuickConciergePrompt('Hướng dẫn đăng tin tuyển dụng cho doanh nghiệp')" class="px-2.5 py-1 rounded-full bg-white dark:bg-slate-900 border border-indigo-200 dark:border-slate-700 text-indigo-700 dark:text-indigo-300 font-semibold shrink-0 hover:bg-indigo-50">📢 Đăng tuyển B2B</button>
+        <button id="chat-chip-4" onclick="sendQuickConciergePrompt('Cách tra cứu trạng thái hồ sơ đã nộp')" class="px-2.5 py-1 rounded-full bg-white dark:bg-slate-900 border border-amber-200 dark:border-slate-700 text-amber-700 dark:text-amber-300 font-semibold shrink-0 hover:bg-amber-50">📋 Tra cứu CV</button>
+      </div>
+
+      <!-- Chat Messages Log -->
+      <div id="support-chatbot-messages" class="p-4 space-y-3 max-h-[330px] min-h-[250px] overflow-y-auto custom-scroll text-xs bg-slate-50/50 dark:bg-slate-900">
+        <div id="chat-welcome-card" class="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 space-y-2 shadow-sm">
+          <div class="font-bold text-blue-700 dark:text-blue-300">👋 Xin chào! Tôi là Trợ lý AI Chăm sóc Khách hàng 24/7 của HireMind Global.</div>
+          <p class="leading-relaxed">Tôi có thể hỗ trợ bạn ngay lập tức về:</p>
+          <ul class="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
+            <li>• Tìm việc làm theo <b>63 Tỉnh/Thành & 10 Ngành nghề</b></li>
+            <li>• Tính lương <b>Gross ⇄ Net & Thuế TNCN 2026</b></li>
+            <li>• Tra cứu tiến độ <b>Hồ sơ ứng tuyển 5 vòng</b></li>
+            <li>• Hỗ trợ <b>Nhà tuyển dụng đăng tin & Mở Tenant ATS</b></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Chat Input Form -->
+      <form onsubmit="submitSupportChatMessage(event)" class="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
+        <input id="support-chatbot-input" type="text" required placeholder="Nhập câu hỏi (VD: Việc làm AI tại Hà Nội, lương Gross-Net...)"
+          class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none border border-transparent focus:border-blue-500" />
+        <button id="chat-send-btn" type="submit" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-sm shrink-0 transition">
+          Gửi &rarr;
+        </button>
+      </form>
+    </div>
+
+    <!-- Floating Action Buttons: Zalo Circle Button (like screenshot) + 24/7 AI Concierge Pill -->
+    <div class="flex items-center gap-2.5">
+      <button onclick="openFunctionalPageModal('zalo_connect')" title="Chat Zalo Official 24/7"
+        class="w-12 h-12 rounded-full bg-white text-[#0068FF] border-2 border-[#0068FF] shadow-xl hover:scale-105 transition flex flex-col items-center justify-center font-extrabold text-[11px] leading-none">
+        <span>Zalo</span>
+      </button>
+
+      <button onclick="toggleSupportChatbot()"
+        class="px-4 py-3 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white shadow-xl hover:shadow-2xl text-xs font-bold flex items-center gap-2 transition">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping"></span>
+        <span id="chat-float-btn-label">🤖 Chat CSKH 24/7</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Universal Executive Modal Dialog (Spacious 4XL Form Architecture) -->
+  <div id="portal-modal" onclick="if(event.target===this) closePortalModal()" class="fixed inset-0 z-50 hidden bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6">
+    <div id="portal-modal-content" class="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl max-h-[92vh] overflow-y-auto custom-scroll p-7 sm:p-10 border border-slate-200/90 dark:border-slate-700 shadow-[0_25px_80px_-15px_rgba(15,23,42,0.55)]">
+    </div>
+  </div>
+
+  <!-- Centered Toast Container (Hiển thị thông báo chính giữa màn hình) -->
+  <div id="portal-toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[75] pointer-events-none flex flex-col items-center justify-center gap-3 w-[440px] max-w-[92vw]"></div>
+
+  <script src="/i18n.js?v=20261019_v34"></script>
+  <script src="/careers.js?v=20261019_v34"></script>
+</body>
+</html>

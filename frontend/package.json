@@ -1,0 +1,13 @@
+{
+  "name": "hiremind-ai-vietnam-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Giao diện Quản lý Tuyển dụng & Phỏng vấn AI Đa ngôn ngữ (HireMind AI Vietnam)",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

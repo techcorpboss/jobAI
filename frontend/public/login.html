@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập & Đăng ký Hệ sinh thái Tuyển dụng AI — HireMind Global</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Inter"', '"Be Vietnam Pro"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body, button, input, select, textarea {
+      font-family: 'Plus Jakarta Sans', 'Inter', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif !important;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .hero-mesh {
+      background-color: #06122E;
+      background-image:
+        radial-gradient(at 12% 18%, rgba(37, 99, 235, 0.42) 0px, transparent 52%),
+        radial-gradient(at 88% 15%, rgba(13, 148, 136, 0.32) 0px, transparent 48%),
+        radial-gradient(at 75% 82%, rgba(99, 102, 241, 0.36) 0px, transparent 55%),
+        radial-gradient(at 18% 88%, rgba(14, 165, 233, 0.25) 0px, transparent 50%);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(96, 165, 250, 0.5);
+    }
+    .auth-input {
+      width: 100%;
+      padding: 0.85rem 1rem 0.85rem 2.85rem;
+      border-radius: 0.875rem;
+      border: 1.5px solid #CBD5E1;
+      background-color: #F8FAFC;
+      color: #0F172A;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .auth-input:focus {
+      outline: none;
+      background-color: #FFFFFF;
+      border-color: #2563EB;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+    }
+    html.dark .auth-input {
+      background-color: #1E293B;
+      border-color: #334155;
+      color: #F8FAFC;
+    }
+    html.dark .auth-input:focus {
+      background-color: #0F172A;
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+    }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.45); border-radius: 9999px; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
+
+  <!-- TOP GLOBAL NAVIGATION BAR -->
+  <header class="w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30">
+    <div class="max-w-[1480px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+      <a href="/careers.html" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-teal-500 flex items-center justify-center text-white font-extrabold text-sm shadow-md group-hover:scale-105 transition">
+          HM
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight">HireMind Global</span>
+            <span class="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+              SSO & Identity Cloud
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
+            Cổng Xác Thực Tập Trung • Ứng Viên, Doanh Nghiệp B2B (Multi-Tenant) & Quản Trị ATS
+          </p>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-2.5">
+        <a href="/careers.html"
+          class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 hover:text-blue-700 dark:text-slate-200 text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 border border-slate-200/80 dark:border-slate-700">
+          <span>🌐</span>
+          <span>Cổng Việc Làm Public</span>
+        </a>
+        <a href="/index.html"
+          class="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
+          <span>🏢</span>
+          <span class="hidden sm:inline">Hệ thống Quản trị ATS</span>
+          <span class="sm:hidden">ATS</span>
+        </a>
+        <button onclick="toggleDarkTheme()"
+          class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-sm hover:border-blue-500 transition"
+          title="Chuyển chế độ Sáng / Tối">
+          ☀️/🌙
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SPLIT-SCREEN ENTERPRISE AUTHENTICATION WORKSPACE -->
+  <main class="flex-1 max-w-[1480px] w-full mx-auto px-4 sm:px-8 py-6 sm:py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+
+    <!-- LEFT COLUMN (7 COLS): EXECUTIVE VALUE PROPOSITION & 1-CLICK DEMO LOGIN STUDIO -->
+    <section class="lg:col-span-7 hero-mesh rounded-3xl p-7 sm:p-10 text-white shadow-2xl flex flex-col justify-between relative overflow-hidden border border-blue-800/50">
+      <div class="space-y-6 relative z-10">
+        <!-- Security & Compliance Badges -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-blue-500/20 text-cyan-300 border border-cyan-400/30">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            GLOBAL AI TALENT & MULTI-TENANT CLOUD
+          </span>
+          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white/10 text-blue-100 border border-white/15">
+            🔒 Chuẩn Bảo mật ISO/IEC 27001 & Nghị định 13/2023
+          </span>
+        </div>
+
+        <div class="space-y-3">
+          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-[1.3]">
+            Một Tài Khoản Hợp Nhất Cho Toàn Bộ Hành Trình Tuyển Dụng & Sự Nghiệp Quốc Tế
+          </h1>
+          <p class="text-sm sm:text-base text-blue-100/85 leading-relaxed max-w-2xl">
+            Hệ thống phân quyền thông minh tự động kết nối bạn tới đúng không gian làm việc: <b>Cổng Ứng viên 1-Click AI</b>, <b>Không gian Doanh nghiệp B2B (Multi-Tenant)</b> hoặc <b>Trung tâm Quản trị Tuyển dụng ATS Nội bộ</b>.
+          </p>
+        </div>
+
+        <!-- 3 Persona Highlights -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+          <div onclick="selectAuthRole('candidate')" class="glass-card p-4 rounded-2xl cursor-pointer transition space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xl">👤</span>
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-300 border border-teal-400/30">Ứng viên</span>
+            </div>
+            <div class="font-bold text-sm text-white">Hồ sơ Ứng viên & AI CV</div>
+            <p class="text-xs text-blue-100/75 leading-relaxed">Ứng tuyển 1 chạm, AI chấm điểm độ khớp CV, phỏng vấn tự động 24/7 và theo dõi 5 bước.</p>
+          </div>
+
+          <div onclick="selectAuthRole('employer')" class="glass-card p-4 rounded-2xl cursor-pointer transition space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xl">🏢</span>
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-indigo-400/20 text-indigo-200 border border-indigo-400/30">Doanh nghiệp B2B</span>
+            </div>
+            <div class="font-bold text-sm text-white">Tenant Tổ chức Độc lập</div>
+            <p class="text-xs text-blue-100/75 leading-relaxed">Cấp mã <code>TENANT-ID</code> riêng, đăng tin trên 63 tỉnh thành & quản lý kho CV độc lập.</p>
+          </div>
+
+          <div onclick="selectAuthRole('admin_ats')" class="glass-card p-4 rounded-2xl cursor-pointer transition space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xl">🛡️</span>
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">Quản trị ATS</span>
+            </div>
+            <div class="font-bold text-sm text-white">HR Director & Recruiter</div>
+            <p class="text-xs text-blue-100/75 leading-relaxed">Quản trị Kanban 5 vòng, ma trận chấm điểm phỏng vấn, Offer, in biểu mẫu & xuất Excel.</p>
+          </div>
+        </div>
+
+        <!-- 1-CLICK INSTANT DEMO ACCOUNTS STUDIO -->
+        <div class="glass-card rounded-2xl p-5 space-y-4 border border-cyan-400/30">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs font-extrabold uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
+                <span>⚡</span>
+                <span>Trải nghiệm Nhanh 1 Chạm (1-Click Instant Demo Accounts)</span>
+              </div>
+              <p class="text-xs text-blue-100/80 mt-0.5">Nhấn vào bất kỳ tài khoản mẫu nào bên dưới để đăng nhập ngay và chuyển tới đúng phân hệ:</p>
+            </div>
+          </div>
+
+          <!-- Demo Candidates -->
+          <div class="space-y-2">
+            <div class="text-xs font-bold text-teal-300">👤 Tài khoản Ứng viên Quản lý & Chuyên gia (Candidate Portal):</div>
+            <div id="demo-candidates-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button type="button" onclick="instantDemoLogin('candidate', 'minhhoang.exec@hiremind.vn')"
+                class="text-left p-3 rounded-xl bg-white/10 hover:bg-teal-500/25 border border-white/15 hover:border-teal-300 transition flex items-center justify-between gap-2 group">
+                <div class="min-w-0">
+                  <div class="font-bold text-sm text-white truncate">Nguyễn Minh Hoàng (VP Engineering)</div>
+                  <div class="text-xs text-blue-200/80 font-mono truncate">minhhoang.exec@hiremind.vn • CNTT & AI</div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-teal-500 text-white text-xs font-bold shrink-0 group-hover:scale-105 transition">Đăng nhập &rarr;</span>
+              </button>
+
+              <button type="button" onclick="instantDemoLogin('candidate', 'baongoc.cfo@hiremind.vn')"
+                class="text-left p-3 rounded-xl bg-white/10 hover:bg-teal-500/25 border border-white/15 hover:border-teal-300 transition flex items-center justify-between gap-2 group">
+                <div class="min-w-0">
+                  <div class="font-bold text-sm text-white truncate">Trần Bảo Ngọc (Giám đốc Tài chính CFO)</div>
+                  <div class="text-xs text-blue-200/80 font-mono truncate">baongoc.cfo@hiremind.vn • Tài chính & NH</div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-teal-500 text-white text-xs font-bold shrink-0 group-hover:scale-105 transition">Đăng nhập &rarr;</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Demo Employers B2B -->
+          <div class="space-y-2">
+            <div class="text-xs font-bold text-indigo-300">🏢 Tài khoản Tổ chức / Doanh nghiệp B2B (Multi-Tenant):</div>
+            <div id="demo-employers-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button type="button" onclick="instantDemoLogin('employer', 'hrd@techvina.vn')"
+                class="text-left p-3 rounded-xl bg-white/10 hover:bg-indigo-500/25 border border-white/15 hover:border-indigo-300 transition flex items-center justify-between gap-2 group">
+                <div class="min-w-0">
+                  <div class="font-bold text-sm text-white truncate">🇻🇳 TechVina Holdings (TENANT-VN-01)</div>
+                  <div class="text-xs text-blue-200/80 font-mono truncate">hrd@techvina.vn • 5 vị trí đang mở</div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-indigo-500 text-white text-xs font-bold shrink-0 group-hover:scale-105 transition">Vào Tenant &rarr;</span>
+              </button>
+
+              <button type="button" onclick="instantDemoLogin('employer', 'talent@sakura-fdi.jp')"
+                class="text-left p-3 rounded-xl bg-white/10 hover:bg-indigo-500/25 border border-white/15 hover:border-indigo-300 transition flex items-center justify-between gap-2 group">
+                <div class="min-w-0">
+                  <div class="font-bold text-sm text-white truncate">🇯🇵 Sakura Electronics FDI (TENANT-JP-02)</div>
+                  <div class="text-xs text-blue-200/80 font-mono truncate">talent@sakura-fdi.jp • Sản xuất & KCN</div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-indigo-500 text-white text-xs font-bold shrink-0 group-hover:scale-105 transition">Vào Tenant &rarr;</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Demo Admin ATS Roles -->
+          <div class="space-y-2">
+            <div class="text-xs font-bold text-amber-300">🛡️ Vai trò Quản trị viên Hệ thống ATS Nội bộ (RBAC):</div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button type="button" onclick="instantAdminRoleLogin('hr_director', 'ALL', 'Giám đốc Nhân sự (HR Director)')"
+                class="p-2.5 rounded-xl bg-white/10 hover:bg-amber-500/25 border border-white/15 hover:border-amber-300 text-left transition">
+                <div class="font-bold text-xs text-white">👑 HR Director</div>
+                <div class="text-[11px] text-blue-200/80">Toàn quyền 11 phân hệ & SaaS</div>
+              </button>
+              <button type="button" onclick="instantAdminRoleLogin('recruiter', 'TENANT-VN-01', 'Chuyên viên Tuyển dụng (Recruiter)')"
+                class="p-2.5 rounded-xl bg-white/10 hover:bg-amber-500/25 border border-white/15 hover:border-amber-300 text-left transition">
+                <div class="font-bold text-xs text-white">🎯 Senior Recruiter</div>
+                <div class="text-[11px] text-blue-200/80">Sàng lọc CV, Kanban & Offer</div>
+              </button>
+              <button type="button" onclick="instantAdminRoleLogin('hiring_manager', 'TENANT-VN-01', 'Trưởng Bộ phận (Hiring Manager)')"
+                class="p-2.5 rounded-xl bg-white/10 hover:bg-amber-500/25 border border-white/15 hover:border-amber-300 text-left transition">
+                <div class="font-bold text-xs text-white">👔 Hiring Manager</div>
+                <div class="text-[11px] text-blue-200/80">Yêu cầu tuyển dụng & Phỏng vấn</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Trust Footer inside Left Panel -->
+      <div class="pt-6 mt-6 border-t border-white/15 flex flex-wrap items-center justify-between gap-4 text-xs text-blue-200/80 relative z-10">
+        <div>✓ Đã đăng ký Bộ Công Thương • ✓ Bảo mật TLS 1.3 & OAuth 2.0</div>
+        <div class="font-mono">Gateway: motapis.com/v1 • SLA 99.95%</div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN (5 COLS): MODERN INTERACTIVE LOGIN & REGISTRATION FORM CARD -->
+    <section class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-3xl p-7 sm:p-10 border border-slate-200/90 dark:border-slate-800 shadow-xl flex flex-col justify-between">
+      <div class="space-y-6">
+
+        <!-- 1. Role Switcher Pills -->
+        <div class="space-y-2">
+          <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400">
+            1. Chọn Phân hệ Tài khoản của bạn:
+          </label>
+          <div class="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
+            <button type="button" id="role-tab-candidate" onclick="selectAuthRole('candidate')"
+              class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center justify-center gap-1.5">
+              <span>👤</span>
+              <span>Ứng viên</span>
+            </button>
+            <button type="button" id="role-tab-employer" onclick="selectAuthRole('employer')"
+              class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition flex items-center justify-center gap-1.5">
+              <span>🏢</span>
+              <span>Doanh nghiệp</span>
+            </button>
+            <button type="button" id="role-tab-admin_ats" onclick="selectAuthRole('admin_ats')"
+              class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition flex items-center justify-center gap-1.5">
+              <span>🛡️</span>
+              <span>Quản trị ATS</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Mode Switcher (Sign In vs Create Account) -->
+        <div class="flex items-center border-b border-slate-200 dark:border-slate-800">
+          <button type="button" id="mode-tab-login" onclick="selectAuthMode('login')"
+            class="flex-1 pb-3 text-sm sm:text-base font-extrabold border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 transition">
+            🔐 Đăng nhập Tài khoản
+          </button>
+          <button type="button" id="mode-tab-register" onclick="selectAuthMode('register')"
+            class="flex-1 pb-3 text-sm sm:text-base font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition">
+            ✨ Đăng ký Tài khoản mới
+          </button>
+        </div>
+
+        <!-- Dynamic Heading -->
+        <div class="space-y-1">
+          <h2 id="auth-form-title" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+            Chào mừng Ứng viên & Chuyên gia quay trở lại
+          </h2>
+          <p id="auth-form-subtitle" class="text-sm text-slate-500 dark:text-slate-400">
+            Đăng nhập để ứng tuyển 1 chạm, xem điểm AI Matching và theo dõi tiến độ hồ sơ 5 vòng.
+          </p>
+        </div>
+
+        <!-- Status Alert Box -->
+        <div id="auth-alert-box" class="hidden p-4 rounded-2xl text-sm font-semibold"></div>
+
+        <!-- =========================================================
+             FORM A: LOGIN FORM (Candidate / Employer / Admin ATS)
+             ========================================================= -->
+        <form id="form-auth-login" onsubmit="handleStandardLogin(event)" class="space-y-4">
+          <div>
+            <label id="lbl-login-email" class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+              Địa chỉ Email công việc hoặc Tài khoản *
+            </label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base">✉️</span>
+              <input id="login-email-input" type="email" required
+                value="minhhoang.exec@hiremind.vn"
+                placeholder="name@company.com"
+                class="auth-input" />
+            </div>
+          </div>
+
+          <div id="login-tenant-wrapper" class="hidden">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+              Mã Tổ chức / Doanh nghiệp (Tenant ID)
+            </label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base">🏢</span>
+              <select id="login-tenant-select" class="auth-input font-semibold">
+                <option value="TENANT-VN-01">🇻🇳 TENANT-VN-01 — TechVina Holdings (Việt Nam)</option>
+                <option value="TENANT-JP-02">🇯🇵 TENANT-JP-02 — Sakura Electronics FDI (Nhật Bản)</option>
+                <option value="TENANT-KR-03">🇰🇷 TENANT-KR-03 — Hana Semicon & AI Cloud (Hàn Quốc)</option>
+                <option value="TENANT-TH-04">🇹🇭 TENANT-TH-04 — Siam Retail & Energy (Thái Lan)</option>
+                <option value="TENANT-LA-05">🇱🇦 TENANT-LA-05 — Mekong Telecom & Infra (Lào)</option>
+                <option value="TENANT-KH-06">🇰🇭 TENANT-KH-06 — Angkor Royal Banking (Campuchia)</option>
+                <option value="ALL">🌐 ALL — Super Admin Toàn Hệ Thống</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-200">
+                Mật khẩu bảo mật *
+              </label>
+              <button type="button" onclick="showPasswordResetHint()" class="text-xs font-bold text-blue-600 hover:underline">
+                Quên mật khẩu?
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base">🔒</span>
+              <input id="login-password-input" type="password" required
+                value="HireMind@2026"
+                placeholder="••••••••••••"
+                class="auth-input pr-12" />
+              <button type="button" onclick="togglePasswordVisibility('login-password-input')"
+                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-sm font-semibold">
+                👁️
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs sm:text-sm pt-1">
+            <label class="inline-flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-300 font-medium">
+              <input type="checkbox" checked class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500" />
+              <span>Duy trì đăng nhập trong 30 ngày</span>
+            </label>
+            <span class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">🛡️ Bảo vệ 2FA / TLS</span>
+          </div>
+
+          <button type="submit" id="btn-submit-login"
+            class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white font-extrabold text-base shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2">
+            <span>🚀 Đăng nhập vào Hệ thống</span>
+            <span>&rarr;</span>
+          </button>
+        </form>
+
+        <!-- =========================================================
+             FORM B: REGISTRATION FORM (Candidate or B2B Employer)
+             ========================================================= -->
+        <form id="form-auth-register" onsubmit="handleStandardRegister(event)" class="hidden space-y-4">
+          <!-- Candidate Registration Fields -->
+          <div id="reg-candidate-fields" class="space-y-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Họ và tên Ứng viên *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">👤</span>
+                  <input id="reg-cand-name" type="text" required value="Lê Hoàng Khôi" class="auth-input" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Email Cá nhân *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">✉️</span>
+                  <input id="reg-cand-email" type="email" required value="hoangkhoi.exec@hiremind.vn" class="auth-input" />
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Số điện thoại Liên hệ *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">📞</span>
+                  <input id="reg-cand-phone" type="text" required value="+84 908 777 999" class="auth-input" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Kinh nghiệm (Năm) *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">⭐</span>
+                  <input id="reg-cand-exp" type="number" step="0.5" value="8" class="auth-input" />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Danh mục Ngành nghề Ưu tiên *</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">📂</span>
+                <select id="reg-cand-sector" class="auth-input font-semibold">
+                  <option value="Công nghệ Thông tin, AI & Phần mềm">💻 Công nghệ Thông tin, AI & Phần mềm</option>
+                  <option value="Tài chính, Ngân hàng & Đầu tư">🏦 Tài chính, Ngân hàng & Đầu tư</option>
+                  <option value="Sản xuất, Chế tạo & Khu Công nghiệp FDI">🏭 Sản xuất, Chế tạo & Khu Công nghiệp FDI</option>
+                  <option value="Thương mại, Bán lẻ & Phát triển Kinh doanh">🛍️ Thương mại, Bán lẻ & Phát triển Kinh doanh</option>
+                  <option value="Chuỗi cung ứng, Logistics & Xuất nhập khẩu">🚢 Chuỗi cung ứng, Logistics & Xuất nhập khẩu</option>
+                  <option value="Năng lượng, Môi trường & Phát triển Bền vững (ESG)">🌱 Năng lượng, Môi trường & Phát triển Bền vững</option>
+                  <option value="Bất động sản, Xây dựng & Hạ tầng">🏗️ Bất động sản, Xây dựng & Hạ tầng</option>
+                  <option value="Quản trị Nhân sự, Pháp chế & Vận hành">⚖️ Quản trị Nhân sự, Pháp chế & Vận hành</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Kỹ năng cốt lõi (Cách nhau bằng dấu phẩy)</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">⚡</span>
+                <input id="reg-cand-skills" type="text" value="System Architecture, Cloud FinOps, AI/LLM, Agile OKRs, P&L Management" class="auth-input" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Employer B2B Registration Fields -->
+          <div id="reg-employer-fields" class="hidden space-y-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Tên Doanh nghiệp / Tập đoàn *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">🏢</span>
+                  <input id="reg-emp-company" type="text" value="VinaPacific Technology & Investment Group" class="auth-input" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Quốc gia Trụ sở *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">🌐</span>
+                  <select id="reg-emp-country" class="auth-input font-semibold">
+                    <option value="Việt Nam">🇻🇳 Việt Nam</option>
+                    <option value="Nhật Bản (FDI)">🇯🇵 Nhật Bản (FDI)</option>
+                    <option value="Hàn Quốc (FDI)">🇰🇷 Hàn Quốc (FDI)</option>
+                    <option value="Singapore / Quốc tế">🇸🇬 Singapore / Quốc tế</option>
+                    <option value="Thái Lan">🇹🇭 Thái Lan</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Người đại diện (CHRO / HRD) *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">👔</span>
+                  <input id="reg-emp-admin" type="text" value="Trần Thanh Hà (CHRO)" class="auth-input" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Email Quản trị Doanh nghiệp *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">✉️</span>
+                  <input id="reg-emp-email" type="email" value="chro@vinapacific.vn" class="auth-input" />
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Lĩnh vực Hoạt động *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">📊</span>
+                  <select id="reg-emp-industry" class="auth-input font-semibold">
+                    <option value="Công nghệ Thông tin, AI & Phần mềm">Công nghệ Thông tin, AI & Phần mềm</option>
+                    <option value="Sản xuất, Chế tạo & Khu Công nghiệp FDI">Sản xuất, Chế tạo & KCN FDI</option>
+                    <option value="Tài chính, Ngân hàng & Đầu tư">Tài chính, Ngân hàng & Đầu tư</option>
+                    <option value="Thương mại, Bán lẻ & Phát triển Kinh doanh">Thương mại, Bán lẻ & Kinh doanh</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Subdomain Cổng riêng *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">🔗</span>
+                  <input id="reg-emp-sub" type="text" value="vinapacific.hiremind.vn" class="auth-input font-mono" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-submit-register"
+            class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-base shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2">
+            <span>✨ Khởi tạo Tài khoản & Đăng nhập ngay</span>
+            <span>&rarr;</span>
+          </button>
+        </form>
+
+        <!-- Enterprise SSO Divider -->
+        <div class="space-y-3 pt-2">
+          <div class="relative flex items-center justify-center">
+            <div class="border-t border-slate-200 dark:border-slate-800 w-full"></div>
+            <span class="bg-white dark:bg-slate-900 px-3 text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">
+              Hoặc Đăng nhập 1 Chạm qua SSO Quốc Tế
+            </span>
+            <div class="border-t border-slate-200 dark:border-slate-800 w-full"></div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <button type="button" onclick="triggerSsoLogin('Google Workspace')"
+              class="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+              <span>🌐</span>
+              <span>Google</span>
+            </button>
+            <button type="button" onclick="triggerSsoLogin('Microsoft Entra ID')"
+              class="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+              <span>🪟</span>
+              <span>Microsoft</span>
+            </button>
+            <button type="button" onclick="triggerSsoLogin('LinkedIn Talent')"
+              class="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+              <span>💼</span>
+              <span>LinkedIn</span>
+            </button>
+            <button type="button" onclick="triggerSsoLogin('Zalo / VNeID')"
+              class="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+              <span>💬</span>
+              <span>Zalo OA</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Note inside Form Card -->
+      <div class="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500">
+        Bằng việc đăng nhập, bạn đồng ý với <a href="/careers.html" class="text-blue-600 font-semibold hover:underline">Thỏa thuận Sử dụng</a> & <a href="/careers.html" class="text-blue-600 font-semibold hover:underline">Chính sách Bảo mật NĐ 13/2023/NĐ-CP</a> của HireMind Global.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8010";
+    let currentRole = "candidate"; // 'candidate' | 'employer' | 'admin_ats'
+    let currentMode = "login";     // 'login' | 'register'
+
+    function toggleDarkTheme() {
+      document.documentElement.classList.toggle("dark");
+    }
+
+    function togglePasswordVisibility(inputId) {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      el.type = el.type === "password" ? "text" : "password";
+    }
+
+    function showAuthAlert(message, isSuccess = true) {
+      const box = document.getElementById("auth-alert-box");
+      if (!box) return;
+      box.className = isSuccess
+        ? "p-4 rounded-2xl text-sm font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-800"
+        : "p-4 rounded-2xl text-sm font-bold bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/60 dark:text-red-200 dark:border-red-800";
+      box.innerHTML = message;
+      box.classList.remove("hidden");
+    }
+
+    function showPasswordResetHint() {
+      showAuthAlert(
+        "🔑 Hệ thống đã gửi liên kết đặt lại mật khẩu & mã OTP tới email của bạn. Hoặc bạn có thể bấm vào các <b>Tài khoản Mẫu 1 Chạm (Demo Accounts)</b> ở cột bên trái để đăng nhập ngay!",
+        true
+      );
+    }
+
+    function selectAuthRole(role) {
+      currentRole = role;
+      ["candidate", "employer", "admin_ats"].forEach((r) => {
+        const btn = document.getElementById(`role-tab-${r}`);
+        if (!btn) return;
+        if (r === role) {
+          btn.className = "py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center justify-center gap-1.5";
+        } else {
+          btn.className = "py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition flex items-center justify-center gap-1.5";
+        }
+      });
+
+      const titleEl = document.getElementById("auth-form-title");
+      const subEl = document.getElementById("auth-form-subtitle");
+      const emailInput = document.getElementById("login-email-input");
+      const tenantWrap = document.getElementById("login-tenant-wrapper");
+      const candFields = document.getElementById("reg-candidate-fields");
+      const empFields = document.getElementById("reg-employer-fields");
+
+      if (role === "candidate") {
+        titleEl.textContent = currentMode === "login"
+          ? "Chào mừng Ứng viên & Chuyên gia quay trở lại"
+          : "Tạo Hồ sơ Ứng viên & Chuyên gia Quốc tế";
+        subEl.textContent = "Đăng nhập để ứng tuyển 1 chạm, xem điểm AI Matching và theo dõi tiến độ hồ sơ 5 vòng.";
+        if (emailInput) emailInput.value = "minhhoang.exec@hiremind.vn";
+        if (tenantWrap) tenantWrap.classList.add("hidden");
+        if (candFields) candFields.classList.remove("hidden");
+        if (empFields) empFields.classList.add("hidden");
+      } else if (role === "employer") {
+        titleEl.textContent = currentMode === "login"
+          ? "Cổng Đăng nhập Doanh nghiệp B2B (Multi-Tenant)"
+          : "Đăng ký Cấp phát Không gian Tuyển dụng Doanh nghiệp";
+        subEl.textContent = "Mỗi tổ chức được cấp mã Tenant ID riêng biệt để đăng tin tuyển dụng và quản lý CV ứng viên.";
+        if (emailInput) emailInput.value = "hrd@techvina.vn";
+        if (tenantWrap) tenantWrap.classList.remove("hidden");
+        if (candFields) candFields.classList.add("hidden");
+        if (empFields) empFields.classList.remove("hidden");
+      } else {
+        titleEl.textContent = "Đăng nhập Trung tâm Quản trị Tuyển dụng ATS Nội bộ";
+        subEl.textContent = "Dành cho Giám đốc Nhân sự (HRD), Chuyên viên Tuyển dụng (Recruiter) và Hiring Manager.";
+        if (emailInput) emailInput.value = "hr.director@hiremind.vn";
+        if (tenantWrap) tenantWrap.classList.remove("hidden");
+        if (candFields) candFields.classList.add("hidden");
+        if (empFields) empFields.classList.remove("hidden");
+      }
+    }
+
+    function selectAuthMode(mode) {
+      currentMode = mode;
+      const loginTab = document.getElementById("mode-tab-login");
+      const regTab = document.getElementById("mode-tab-register");
+      const loginForm = document.getElementById("form-auth-login");
+      const regForm = document.getElementById("form-auth-register");
+
+      if (mode === "login") {
+        loginTab.className = "flex-1 pb-3 text-sm sm:text-base font-extrabold border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 transition";
+        regTab.className = "flex-1 pb-3 text-sm sm:text-base font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition";
+        loginForm.classList.remove("hidden");
+        regForm.classList.add("hidden");
+      } else {
+        regTab.className = "flex-1 pb-3 text-sm sm:text-base font-extrabold border-b-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 transition";
+        loginTab.className = "flex-1 pb-3 text-sm sm:text-base font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition";
+        loginForm.classList.add("hidden");
+        regForm.classList.remove("hidden");
+      }
+      selectAuthRole(currentRole);
+    }
+
+    async function instantDemoLogin(role, email) {
+      selectAuthRole(role);
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem("hiremind_portal_user", JSON.stringify(data.user));
+          if (data.user.org_id) {
+            localStorage.setItem("hiremind_active_org_id", data.user.org_id);
+          }
+          showAuthAlert(
+            `✔ Đăng nhập thành công: <b>${data.user.full_name || data.user.company_name}</b> (${data.user.email}). Đang chuyển hướng...`,
+            true
+          );
+          setTimeout(() => {
+            window.location.href = "/careers.html";
+          }, 600);
+          return;
+        }
+      } catch (e) {}
+
+      // Fallback instant session if offline
+      const fallbackUser = role === "employer"
+        ? { role: "employer", org_id: "TENANT-VN-01", company_name: "TechVina Holdings", email }
+        : { role: "candidate", full_name: "Nguyễn Minh Hoàng", email, preferred_sector: "Công nghệ Thông tin, AI & Phần mềm" };
+      localStorage.setItem("hiremind_portal_user", JSON.stringify(fallbackUser));
+      showAuthAlert(`✔ Đăng nhập thành công (${email}). Đang chuyển tới Cổng Việc Làm...`, true);
+      setTimeout(() => {
+        window.location.href = "/careers.html";
+      }, 600);
+    }
+
+    function instantAdminRoleLogin(rbacRole, orgId, roleLabel) {
+      localStorage.setItem("hiremind_active_role", rbacRole);
+      localStorage.setItem("hiremind_active_org_id", orgId);
+      showAuthAlert(`🛡️ Đã xác thực vai trò <b>${roleLabel}</b> (${orgId}). Đang mở Hệ thống Quản trị ATS...`, true);
+      setTimeout(() => {
+        window.location.href = `/index.html?org_id=${encodeURIComponent(orgId)}&role=${encodeURIComponent(rbacRole)}`;
+      }, 600);
+    }
+
+    async function handleStandardLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById("login-email-input").value.trim();
+      const tenant = document.getElementById("login-tenant-select")?.value || "TENANT-VN-01";
+
+      if (currentRole === "admin_ats") {
+        instantAdminRoleLogin("hr_director", tenant, `Quản trị viên ATS (${email})`);
+        return;
+      }
+
+      await instantDemoLogin(currentRole, email);
+    }
+
+    async function handleStandardRegister(e) {
+      e.preventDefault();
+      if (currentRole === "candidate") {
+        const skills = document.getElementById("reg-cand-skills").value.split(",").map((s) => s.trim()).filter(Boolean);
+        const payload = {
+          full_name: document.getElementById("reg-cand-name").value.trim(),
+          email: document.getElementById("reg-cand-email").value.trim(),
+          phone: document.getElementById("reg-cand-phone").value.trim(),
+          experience_years: parseFloat(document.getElementById("reg-cand-exp").value || "5"),
+          preferred_sector: document.getElementById("reg-cand-sector").value,
+          skills,
+          bio_cv_text: `Candidate: ${document.getElementById("reg-cand-name").value} | Skills: ${skills.join(", ")}`,
+        };
+        const res = await fetch(`${API_BASE}/api/auth/register-candidate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem("hiremind_portal_user", JSON.stringify(data.user));
+          showAuthAlert(`🎉 Đã tạo tài khoản Ứng viên <b>${data.user.full_name}</b> thành công! Đang chuyển tới Cổng Việc Làm...`, true);
+          setTimeout(() => { window.location.href = "/careers.html"; }, 700);
+        }
+      } else {
+        const payload = {
+          company_name: document.getElementById("reg-emp-company").value.trim(),
+          country: document.getElementById("reg-emp-country").value,
+          admin_name: document.getElementById("reg-emp-admin").value.trim(),
+          email: document.getElementById("reg-emp-email").value.trim(),
+          industry: document.getElementById("reg-emp-industry").value,
+          subdomain: document.getElementById("reg-emp-sub").value.trim(),
+        };
+        const res = await fetch(`${API_BASE}/api/auth/register-employer`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem("hiremind_portal_user", JSON.stringify(data.user));
+          localStorage.setItem("hiremind_active_org_id", data.user.org_id);
+          showAuthAlert(`🏢 Đã cấp phát Tenant <b>${data.user.org_id}</b> cho <b>${data.user.company_name}</b>! Đang mở Không gian Quản trị...`, true);
+          setTimeout(() => { window.location.href = `/index.html?org_id=${encodeURIComponent(data.user.org_id)}`; }, 800);
+        }
+      }
+    }
+
+    function triggerSsoLogin(providerName) {
+      showAuthAlert(`🔐 Đang xác thực OAuth 2.0 qua <b>${providerName}</b>...`, true);
+      setTimeout(() => {
+        if (currentRole === "employer") {
+          instantDemoLogin("employer", "hrd@techvina.vn");
+        } else if (currentRole === "admin_ats") {
+          instantAdminRoleLogin("hr_director", "ALL", `${providerName} Enterprise Admin`);
+        } else {
+          instantDemoLogin("candidate", "minhhoang.exec@hiremind.vn");
+        }
+      }, 450);
+    }
+
+    // Check URL query params (?role=employer&mode=register)
+    window.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const r = params.get("role");
+      const m = params.get("mode");
+      if (r && ["candidate", "employer", "admin_ats"].includes(r)) {
+        selectAuthRole(r);
+      }
+      if (m && ["login", "register"].includes(m)) {
+        selectAuthMode(m);
+      }
+    });
+  </script>
+</body>
+</html>

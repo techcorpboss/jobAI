@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HireMind AI — Enterprise Recruitment Analytics & Multilingual AI ATS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            hr: {
+              bg: '#F3F6FA',
+              card: '#FFFFFF',
+              navy: '#0F172A',
+              blue: '#1D4ED8',
+              teal: '#0D9488',
+              border: '#E2E8F0'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Sans+KR:wght@400;500;700;800&family=Noto+Sans+Khmer:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body, input, select, textarea, button {
+      font-family: 'Be Vietnam Pro', 'Noto Sans Thai', 'Noto Sans Lao', 'Noto Sans Khmer', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Yu Gothic', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+      background-color: #F3F6FA;
+      color: #0F172A;
+    }
+    html[lang="ko"] body, html[lang="ko"] input, html[lang="ko"] select, html[lang="ko"] textarea, html[lang="ko"] button {
+      font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Be Vietnam Pro', sans-serif;
+    }
+    html[lang="ja"] body, html[lang="ja"] input, html[lang="ja"] select, html[lang="ja"] textarea, html[lang="ja"] button {
+      font-family: 'Noto Sans JP', 'Yu Gothic', 'Meiryo', 'Be Vietnam Pro', sans-serif;
+    }
+    html[lang="zh"] body, html[lang="zh"] input, html[lang="zh"] select, html[lang="zh"] textarea, html[lang="zh"] button {
+      font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', 'Be Vietnam Pro', sans-serif;
+    }
+    html[lang="th"] body, html[lang="th"] input, html[lang="th"] select, html[lang="th"] textarea, html[lang="th"] button {
+      font-family: 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi', 'Be Vietnam Pro', sans-serif;
+    }
+    html[lang="lo"] body, html[lang="lo"] input, html[lang="lo"] select, html[lang="lo"] textarea, html[lang="lo"] button {
+      font-family: 'Noto Sans Lao', 'Leelawadee UI', 'Lao UI', 'Be Vietnam Pro', sans-serif;
+    }
+    html[lang="km"] body, html[lang="km"] input, html[lang="km"] select, html[lang="km"] textarea, html[lang="km"] button {
+      font-family: 'Noto Sans Khmer', 'Leelawadee UI', 'Khmer UI', 'Be Vietnam Pro', sans-serif;
+    }
+    .font-mono, pre, code {
+      font-family: 'JetBrains Mono', Consolas, 'Be Vietnam Pro', 'Noto Sans Thai', 'Noto Sans Lao', 'Noto Sans Khmer', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', monospace !important;
+    }
+    html.dark body {
+      background-color: #0B1120;
+      color: #F1F5F9;
+    }
+    .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 9999px; }
+    .custom-scroll:hover::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.45); }
+    .hr-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 4px 12px -2px rgba(15, 23, 42, 0.025);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .hr-card:hover {
+      border-color: #CBD5E1;
+      box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.06);
+    }
+    html.dark .hr-card {
+      background: #111827;
+      border-color: #1E293B;
+    }
+    .sidebar-btn-active {
+      background: linear-gradient(90deg, rgba(239, 246, 255, 0.95) 0%, rgba(240, 253, 250, 0.75) 100%);
+      color: #1D4ED8 !important;
+      box-shadow: inset 3px 0 0 0 #2563EB, 0 1px 2px 0 rgba(15, 23, 42, 0.03);
+      font-weight: 700;
+    }
+    html.dark .sidebar-btn-active {
+      background: rgba(37, 99, 235, 0.16);
+      color: #60A5FA !important;
+      box-shadow: inset 3px 0 0 0 #60A5FA;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+      100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+    .recording-pulse { animation: pulse-ring 1.5s infinite; }
+    /* Global Executive Modal Form Upgrade for Admin ATS */
+    #crud-modal-content, #candidate-modal-content {
+      font-size: 0.925rem !important;
+      line-height: 1.65 !important;
+    }
+    #crud-modal-content .text-xs, #candidate-modal-content .text-xs {
+      font-size: 0.88rem !important;
+      line-height: 1.6 !important;
+    }
+    #crud-modal-content h3, #candidate-modal-content h3 {
+      font-size: 1.3rem !important;
+      line-height: 1.35 !important;
+    }
+    #crud-modal-content label {
+      font-size: 0.875rem !important;
+      font-weight: 700 !important;
+      margin-bottom: 0.35rem !important;
+      display: block;
+    }
+    #crud-modal-content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    #crud-modal-content select,
+    #crud-modal-content textarea {
+      min-height: 45px !important;
+      padding: 0.65rem 0.95rem !important;
+      font-size: 0.925rem !important;
+      border-radius: 0.85rem !important;
+      border: 1.5px solid #CBD5E1 !important;
+    }
+    #crud-modal-content input:focus,
+    #crud-modal-content select:focus,
+    #crud-modal-content textarea:focus {
+      outline: none !important;
+      border-color: #2563EB !important;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14) !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col lg:flex-row antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- Enterprise Left Sidebar Navigation (Fixed/Sticky on Desktop Scroll) -->
+  <aside class="w-full lg:w-[280px] shrink-0 bg-white dark:bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-200/90 dark:border-slate-800 flex flex-col justify-between z-30 lg:sticky lg:top-0 lg:h-screen lg:max-h-screen lg:overflow-y-auto custom-scroll">
+    <div>
+      <!-- Executive Brand Header (Single-line Non-wrapping Identity) -->
+      <div class="h-[68px] px-4 border-b border-slate-200/80 dark:border-slate-800 flex items-center gap-3">
+        <div class="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-slate-950 via-blue-700 to-teal-500 flex items-center justify-center text-white shadow-md shadow-blue-600/20 ring-1 ring-slate-900/10 shrink-0">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"></span>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-1.5 whitespace-nowrap">
+            <div class="flex items-center gap-1 whitespace-nowrap">
+              <span id="ui-app-name" class="font-extrabold text-[16px] text-slate-900 dark:text-white tracking-tight">HireMind</span>
+              <span class="font-extrabold text-[16px] bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">AI</span>
+            </div>
+            <span class="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800 shrink-0">
+              ATS SUITE
+            </span>
+            <span id="ui-suite-tag" class="hidden">HR Suite</span>
+          </div>
+          <p id="ui-app-edition" class="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate mt-0.5">
+            Enterprise Talent &amp; AI Analytics
+          </p>
+        </div>
+      </div>
+
+      <!-- Organization Badge & Multi-Tenant Workspace Switcher Card -->
+      <div class="p-3 border-b border-slate-200/80 dark:border-slate-800">
+        <div class="p-3 rounded-2xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/70 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-7 h-7 rounded-lg bg-blue-600/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+              </div>
+              <div class="min-w-0">
+                <div id="ui-workspace-label" class="text-[9px] uppercase font-bold tracking-wider text-slate-400 truncate">WORKSPACE ĐA TỔ CHỨC</div>
+                <div id="ui-org-badge" class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">TechVina &amp; FDI Global</div>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[9px] font-bold border border-emerald-200 dark:border-emerald-800 shrink-0">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Live
+            </span>
+          </div>
+
+          <select id="select-org-tenant" onchange="changeOrganizationTenant(this.value)"
+            class="w-full h-8 px-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-600 cursor-pointer shadow-2xs">
+            <option value="ALL">Tất cả Doanh nghiệp (Super Admin • 30 Jobs)</option>
+            <option value="TENANT-VN-01">TENANT-VN-01 — Tập đoàn Công nghệ &amp; Bán lẻ VN</option>
+            <option value="TENANT-JP-02">TENANT-JP-02 — Tập đoàn Điện tử FDI Nhật Bản</option>
+            <option value="TENANT-KR-03">TENANT-KR-03 — Tập đoàn Bán dẫn FDI Hàn Quốc</option>
+            <option value="TENANT-TH-04">TENANT-TH-04 — Tập đoàn Năng lượng Thái Lan</option>
+            <option value="TENANT-LA-05">TENANT-LA-05 — Tập đoàn Viễn thông Lào</option>
+            <option value="TENANT-KH-06">TENANT-KH-06 — Tập đoàn Ngân hàng Campuchia</option>
+          </select>
+
+          <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+            <a href="/careers.html" title="Mở Cổng Tuyển dụng Public (/careers.html)"
+              class="h-8 px-2.5 rounded-xl bg-slate-900 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-2xs transition whitespace-nowrap">
+              <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span id="lbl-sidebar-public-btn" class="truncate">Cổng Public</span>
+              <span id="lbl-open-standalone-careers" class="hidden"></span>
+            </a>
+            <a href="/login.html?role=admin_ats" title="Đăng nhập / Chuyển đổi tài khoản SSO"
+              class="h-8 px-2.5 rounded-xl bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700 font-bold text-[11px] flex items-center justify-center gap-1.5 transition whitespace-nowrap">
+              <svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span class="truncate">Login / SSO</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu Groups (Clean Monoline SVG Icons) -->
+      <nav class="p-3 space-y-5 overflow-x-auto lg:overflow-visible">
+        <!-- Section 1: HR Analytics & Headcount Planning -->
+        <div id="nav-sec-1">
+          <div id="ui-nav-sec-core" class="px-3 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500"></div>
+          <div class="space-y-1">
+            <button onclick="switchTab('dashboard')" id="tab-btn-dashboard"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] flex items-center justify-between transition sidebar-btn-active">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-85" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                <span id="ui-nav-dashboard" class="truncate"></span>
+              </span>
+            </button>
+            <button onclick="switchTab('requisitions')" id="tab-btn-requisitions"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg>
+                <span id="ui-nav-requisitions" class="truncate"></span>
+              </span>
+              <span id="badge-req-count" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800 shrink-0">3</span>
+            </button>
+            <button onclick="switchTab('jobs')" id="tab-btn-jobs"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                <span id="ui-nav-jobs" class="truncate"></span>
+              </span>
+              <span id="badge-job-count" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 shrink-0">30</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 2: AI Screening, ATS Pipeline, Interview & Skill Sandbox -->
+        <div id="nav-sec-2">
+          <div id="ui-nav-sec-ats" class="px-3 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500"></div>
+          <div class="space-y-1">
+            <button onclick="switchTab('pipeline')" id="tab-btn-pipeline"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span id="ui-nav-pipeline" class="truncate"></span>
+              </span>
+              <span id="badge-app-count" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800 shrink-0">150</span>
+            </button>
+            <button onclick="switchTab('interview')" id="tab-btn-interview"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                <span id="ui-nav-interview" class="truncate"></span>
+              </span>
+              <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200/60 shrink-0">AI</span>
+            </button>
+            <button onclick="switchTab('assessment')" id="tab-btn-assessment"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                <span id="ui-nav-assessment" class="truncate"></span>
+              </span>
+              <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200/60 shrink-0">AI</span>
+            </button>
+            <button onclick="switchTab('compare')" id="tab-btn-compare"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span id="ui-nav-compare" class="truncate"></span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 3: Offer, Gross-to-Net, Onboarding & Strategy -->
+        <div id="nav-sec-3">
+          <div id="ui-nav-sec-offer" class="px-3 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500"></div>
+          <div class="space-y-1">
+            <button onclick="switchTab('offers')" id="tab-btn-offers"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span id="ui-nav-offers" class="truncate"></span>
+              </span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-200/60 shrink-0">2</span>
+            </button>
+            <button onclick="switchTab('strategy')" id="tab-btn-strategy"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                <span id="ui-nav-strategy" class="truncate"></span>
+              </span>
+            </button>
+            <button onclick="switchTab('careers')" id="tab-btn-careers"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span id="ui-nav-careers" class="truncate">Cổng Tuyển dụng Public</span>
+              </span>
+              <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300 border border-cyan-200/60 shrink-0">LIVE</span>
+            </button>
+            <button onclick="switchTab('saas')" id="tab-btn-saas"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                <span id="ui-nav-saas" class="truncate">Quản trị Doanh nghiệp Thuê bao</span>
+              </span>
+              <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-200/60 shrink-0">B2B</span>
+            </button>
+            <button onclick="switchTab('users')" id="tab-btn-users"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span id="ui-nav-users" class="truncate">Quản trị Tài khoản Cá nhân</span>
+              </span>
+              <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200/60 shrink-0">B2C</span>
+            </button>
+            <button onclick="switchTab('rbac')" id="tab-btn-rbac"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                <span id="ui-nav-rbac" class="truncate">Phân quyền Vai trò Động (RBAC)</span>
+              </span>
+              <span id="badge-rbac-count" class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-200/80 shrink-0">7 Roles</span>
+            </button>
+            <button onclick="switchTab('ads')" id="tab-btn-ads"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span id="ui-nav-ads" class="truncate">Quản trị Quảng cáo &amp; VIP</span>
+              </span>
+              <span id="badge-ads-count" class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-200/80 shrink-0">VIP</span>
+            </button>
+            <button onclick="switchTab('categories')" id="tab-btn-categories"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+                <span id="ui-nav-categories" class="truncate">Quản trị Danh mục Hệ thống</span>
+              </span>
+              <span id="badge-categories-count" class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200/80 shrink-0">17</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Bottom Compliance Status Card -->
+    <div class="hidden lg:block p-3.5 m-3 rounded-2xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-[11px] space-y-1">
+      <div class="flex items-center justify-between font-bold text-slate-700 dark:text-slate-200">
+        <span id="ui-compliance-title" class="truncate"></span>
+        <span class="w-4 h-4 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center text-[10px] shrink-0">✔</span>
+      </div>
+      <div id="ui-compliance-body" class="text-slate-500 dark:text-slate-400 leading-relaxed text-[10.5px]"></div>
+    </div>
+  </aside>
+
+  <!-- Right Main Content Area -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <!-- Top Executive Command Bar (Single-Line Sleek Architecture) -->
+    <header class="sticky top-0 z-20 min-h-[68px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-7 py-2.5 flex items-center justify-between gap-4">
+      <!-- Left: System Status & Live AI Gateway Chip -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="hidden 2xl:flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 truncate max-w-sm">
+          <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+          <p id="header-subtitle" class="truncate"></p>
+        </div>
+
+        <button id="btn-ai-gateway" onclick="switchTab('strategy')" title="Cấu hình Cổng AI Gateway"
+          class="h-9 px-3 rounded-xl text-[11px] font-bold border border-slate-200/90 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-blue-500/50 hover:bg-blue-50/40 flex items-center gap-2 transition shrink-0">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="lbl-ai-gateway" class="font-mono text-[11px]">AI: claude-sonnet-4-6</span>
+        </button>
+
+        <button onclick="switchTab('categories')" title="Quản trị Danh mục Ngành nghề, Địa điểm & Từ điển Kỹ năng AI"
+          class="h-9 px-3 rounded-xl text-xs font-bold border border-blue-200/90 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 flex items-center gap-1.5 transition shrink-0">
+          <svg class="w-3.5 h-3.5 text-blue-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span class="whitespace-nowrap">Quản lý Danh mục</span>
+        </button>
+
+        <button onclick="switchTab('ads')" title="Quản trị Banner Quảng cáo 2 bên & Tài khoản VIP"
+          class="h-9 px-3 rounded-xl text-xs font-bold border border-amber-300/90 dark:border-amber-700 bg-amber-50/90 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 hover:bg-amber-100 flex items-center gap-1.5 transition shrink-0">
+          <svg class="w-3.5 h-3.5 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span id="lbl-topbar-ads-btn" class="whitespace-nowrap">Tạo Quảng cáo &amp; VIP</span>
+        </button>
+
+        <button id="btn-blind-mode" onclick="toggleBlindMode()"
+          class="h-9 px-3 rounded-xl text-xs font-semibold border transition-all border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-blue-600 flex items-center gap-2 shrink-0">
+          <span id="blind-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span id="lbl-blind-mode" class="whitespace-nowrap"></span>
+        </button>
+      </div>
+
+      <!-- Right: Streamlined Controls (Notification Messenger, Role, Data & ISO Tools Dropdown, Public Portal Link, Language, Theme) -->
+      <div class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+        <!-- Live AI Messenger & Notification Center Button -->
+        <button id="btn-header-messenger" onclick="toggleMessengerDrawer()" title="Trung tâm Thông báo, Cảnh báo & Tiến trình Đánh giá AI (Messenger)"
+          class="relative h-9 px-3 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/90 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 text-xs font-extrabold flex items-center gap-1.5 transition shrink-0">
+          <span id="messenger-live-indicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="hidden xl:inline whitespace-nowrap">Messenger &amp; Tiến trình AI</span>
+          <span id="header-notif-badge" class="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-black leading-tight">3</span>
+        </button>
+
+        <!-- Dynamic Role Selector Pill + Quick RBAC Config Button -->
+        <div class="h-9 flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 rounded-xl pl-2.5 pr-1.5">
+          <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="ui-role-label" class="hidden"></span>
+          <select id="select-role" onchange="changeUserRole(this.value)"
+            class="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer max-w-[215px] truncate">
+            <option value="hr_admin" id="opt-role-admin">👑 Super Admin</option>
+            <option value="hiring_manager" id="opt-role-manager">👔 Hiring Manager</option>
+            <option value="candidate_portal" id="opt-role-candidate">🎓 Candidate Portal</option>
+          </select>
+          <button type="button" onclick="switchTab('rbac')" title="Mở Ma trận Phân quyền Vai trò Động (Dynamic RBAC)"
+            class="h-6 px-2 rounded-lg bg-purple-100 hover:bg-purple-200 dark:bg-purple-950/80 dark:hover:bg-purple-900 text-purple-800 dark:text-purple-300 text-[10px] font-extrabold border border-purple-200/80 dark:border-purple-800 transition shrink-0">
+            🛡️ RBAC
+          </button>
+        </div>
+
+        <!-- Enterprise Tools & ISO Export Dropdown (Consolidates 4 noisy buttons into 1 clean menu) -->
+        <div class="relative group">
+          <button type="button"
+            class="h-9 px-3 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/70 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition shadow-2xs whitespace-nowrap">
+            <svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span id="lbl-tools-menu-btn">Công cụ &amp; Biểu mẫu</span>
+            <svg class="w-3 h-3 text-slate-400 transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-150 absolute right-0 top-full pt-2 w-64 z-50">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-700 shadow-2xl p-1.5 space-y-1">
+              <div id="lbl-tools-menu-hdr" class="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Biểu mẫu ISO &amp; Dữ liệu</div>
+              <button id="btn-print-center" onclick="openPrintCenterModal()"
+                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 flex items-center gap-2.5 transition">
+                <svg class="w-4 h-4 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                <span id="lbl-print-center" class="truncate">In Biểu mẫu ISO (5 Form)</span>
+              </button>
+              <button id="btn-export-excel" onclick="exportMultiSheetExcel()"
+                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 flex items-center gap-2.5 transition">
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                <span id="lbl-export-excel" class="truncate">Xuất Excel Đa Sheet (.xls)</span>
+              </button>
+              <button id="btn-bulk-import" onclick="openBulkImportModal()"
+                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 flex items-center gap-2.5 transition">
+                <svg class="w-4 h-4 text-cyan-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span id="lbl-bulk-import" class="truncate">Nhập Excel Hàng Loạt</span>
+              </button>
+              <button id="btn-export-csv" onclick="exportCandidatesCSV()"
+                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 flex items-center gap-2.5 transition">
+                <svg class="w-4 h-4 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span id="lbl-export-csv" class="truncate">Xuất Báo cáo CSV</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Public Career Portal Button -->
+        <a href="/careers.html" id="btn-header-public-careers"
+          class="h-9 px-3.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-600/20 flex items-center gap-1.5 transition whitespace-nowrap">
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <span id="lbl-header-public-careers">Trang Public</span>
+        </a>
+
+        <!-- Language Selector -->
+        <div class="h-9 flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 rounded-xl px-2.5">
+          <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span id="ui-lang-label" class="hidden"></span>
+          <select id="select-lang" onchange="changeLanguage(this.value)"
+            class="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer">
+            <option value="vi">VI • Tiếng Việt</option>
+            <option value="en">EN • English</option>
+            <option value="ja">JA • 日本語</option>
+            <option value="ko">KO • 한국어</option>
+            <option value="zh">ZH • 中文</option>
+            <option value="th">TH • ภาษาไทย</option>
+            <option value="lo">LO • ພາສາລາວ</option>
+            <option value="km">KM • ភាសាខ្មែរ</option>
+          </select>
+        </div>
+
+        <!-- Theme Toggle Button -->
+        <button onclick="toggleTheme()" title="Chuyển đổi giao diện Sáng / Tối"
+          class="w-9 h-9 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Dynamic Views Container -->
+    <main class="flex-1 p-4 sm:p-8 max-w-[1560px] w-full mx-auto space-y-6">
+      <div id="view-dashboard" class="tab-view space-y-6"></div>
+      <div id="view-requisitions" class="tab-view hidden space-y-6"></div>
+      <div id="view-jobs" class="tab-view hidden space-y-6"></div>
+      <div id="view-pipeline" class="tab-view hidden space-y-6"></div>
+      <div id="view-interview" class="tab-view hidden space-y-6"></div>
+      <div id="view-assessment" class="tab-view hidden space-y-6"></div>
+      <div id="view-compare" class="tab-view hidden space-y-6"></div>
+      <div id="view-offers" class="tab-view hidden space-y-6"></div>
+      <div id="view-strategy" class="tab-view hidden space-y-6"></div>
+      <div id="view-careers" class="tab-view hidden space-y-6"></div>
+      <div id="view-saas" class="tab-view hidden space-y-6"></div>
+      <div id="view-users" class="tab-view hidden space-y-6"></div>
+      <div id="view-rbac" class="tab-view hidden space-y-6"></div>
+      <div id="view-ads" class="tab-view hidden space-y-6"></div>
+      <div id="view-categories" class="tab-view hidden space-y-6"></div>
+    </main>
+  </div>
+
+  <!-- Slide-over Modal for 360° Candidate Profile -->
+  <div id="candidate-modal" onclick="if(event.target===this) closeCandidateModal()" class="fixed inset-0 z-50 hidden bg-slate-950/60 backdrop-blur-md flex justify-end">
+    <div class="w-full max-w-4xl bg-white dark:bg-slate-900 h-full overflow-y-auto custom-scroll p-7 sm:p-9 border-l border-slate-200 dark:border-slate-800 shadow-2xl" id="candidate-modal-content">
+    </div>
+  </div>
+
+  <!-- Universal Enterprise CRUD, Print Center & Bulk Import Modal -->
+  <div id="crud-modal" onclick="if(event.target===this) closeCrudModal()" class="fixed inset-0 z-50 hidden bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6">
+    <div class="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl max-h-[92vh] overflow-y-auto custom-scroll p-7 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-[0_25px_80px_-15px_rgba(15,23,42,0.55)]" id="crud-modal-content">
+    </div>
+  </div>
+
+  <!-- Centered Live AI Progress Messenger Overlay (Real-time Step-by-Step Tracker in Center of Screen) -->
+  <div id="ai-progress-messenger-dock" class="fixed inset-0 z-[70] hidden bg-slate-950/45 backdrop-blur-xs flex items-center justify-center p-4"></div>
+
+  <!-- Centered Enterprise Messenger, Alert & AI Activity Center Modal -->
+  <div id="enterprise-messenger-drawer" onclick="if(event.target===this) toggleMessengerDrawer(false)" class="fixed inset-0 z-[65] hidden bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
+    <div class="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl max-h-[88vh] flex flex-col border border-slate-200 dark:border-slate-800 shadow-[0_25px_80px_-15px_rgba(15,23,42,0.65)] overflow-hidden" id="enterprise-messenger-content">
+      <div class="p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center text-lg shadow-inner">💬</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">● LIVE STREAM</span>
+              <span class="text-[10px] font-mono text-indigo-200">motapis.com/v1 • SQLite Sync</span>
+            </div>
+            <h3 class="text-base font-extrabold mt-0.5">Trung tâm Thông báo &amp; Tiến trình AI</h3>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="markAllNotificationsRead()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-bold transition">✔ Đã đọc tất cả</button>
+          <button onclick="clearAllNotifications()" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 text-[11px] font-bold transition">🗑️ Xóa nhật ký</button>
+          <button onclick="toggleMessengerDrawer(false)" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/25 font-extrabold text-sm flex items-center justify-center">✕</button>
+        </div>
+      </div>
+
+      <div class="px-5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-1.5 text-xs">
+        <button onclick="setMessengerFilter('all')" class="px-3 py-1.5 rounded-xl font-extrabold bg-indigo-600 text-white text-[11px]">Tất cả</button>
+        <button onclick="setMessengerFilter('ai_eval')" class="px-3 py-1.5 rounded-xl font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px]">🤖 Đánh giá AI</button>
+        <button onclick="setMessengerFilter('warning')" class="px-3 py-1.5 rounded-xl font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px]">⚠️ Cảnh báo &amp; Bảo mật</button>
+        <button onclick="setMessengerFilter('category')" class="px-3 py-1.5 rounded-xl font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px]">🗂️ Danh mục</button>
+      </div>
+
+      <div id="messenger-drawer-body" class="p-5 overflow-y-auto custom-scroll space-y-4 flex-1"></div>
+    </div>
+  </div>
+
+  <!-- Floating Messenger Quick Trigger -->
+  <button id="floating-messenger-trigger" onclick="toggleMessengerDrawer()" title="Mở Messenger Theo dõi Tiến trình AI & Cảnh báo Hệ thống"
+    class="fixed bottom-5 right-5 z-40 h-12 px-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-teal-600 hover:from-indigo-500 hover:to-teal-500 text-white shadow-xl shadow-blue-600/30 flex items-center gap-2.5 text-xs font-extrabold transition-all hover:scale-[1.02]">
+    <span class="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping"></span>
+    <span>💬 AI Messenger &amp; Tiến trình</span>
+    <span id="floating-notif-count" class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black">3</span>
+  </button>
+
+  <!-- Centered Toast Notification & Alert Overlay (Hiển thị chính giữa màn hình) -->
+  <div id="toast-container" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[75] pointer-events-none flex flex-col items-center justify-center gap-3 w-[480px] max-w-[92vw]"></div>
+
+  <script src="/i18n.js?v=20261019_v35"></script>
+  <script src="/app.js?v=20261019_v35"></script>
+</body>
+</html>
