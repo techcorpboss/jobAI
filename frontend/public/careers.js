@@ -4436,84 +4436,98 @@ function renderPortalHeader() {
       .map((w) => w[0].toUpperCase())
       .join("");
     authBar.innerHTML = `
-      <div class="relative mega-nav-item">
-        <button type="button" onclick="switchPortalSection('my_apps')"
-          class="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 transition whitespace-nowrap">
-          <div class="relative w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-teal-500 text-white text-[11px] font-bold flex items-center justify-center shadow-xs">
-            ${initials}
-            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"></span>
-          </div>
-          <div class="text-left leading-none hidden sm:block">
-            <div class="text-xs font-bold text-slate-800 dark:text-slate-100">${u.full_name}</div>
-            <div class="text-[10px] font-medium text-teal-600 dark:text-teal-400 mt-0.5">${pf.authVipCandidate}</div>
-          </div>
-          <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </button>
+      <div class="flex items-center gap-1.5">
+        <div class="relative mega-nav-item">
+          <button type="button" onclick="switchPortalSection('my_apps')"
+            class="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 transition whitespace-nowrap">
+            <div class="relative w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-teal-500 text-white text-[11px] font-bold flex items-center justify-center shadow-xs">
+              ${initials}
+              <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"></span>
+            </div>
+            <div class="text-left leading-none hidden sm:block">
+              <div class="text-xs font-bold text-slate-800 dark:text-slate-100">${u.full_name}</div>
+              <div class="text-[10px] font-medium text-teal-600 dark:text-teal-400 mt-0.5">${pf.authVipCandidate}</div>
+            </div>
+            <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
 
-        <!-- Clean Luxury Profile Dropdown Menu -->
-        <div class="mega-dropdown-panel absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-50 text-xs">
-          <div class="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
-            <div class="font-bold text-slate-900 dark:text-white truncate">${u.full_name}</div>
-            <div class="text-[11px] text-slate-500 font-mono truncate mt-0.5">${u.email || "candidate@hiremind.vn"}</div>
-          </div>
-          <div class="py-1 space-y-0.5">
-            <button onclick="switchPortalSection('my_apps')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold flex items-center justify-between">
-              <span>${pf.authMyApps}</span>
-              <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-mono text-[10px]">${(portalState.savedJobs || []).length}</span>
-            </button>
-            <button onclick="openCandidateAuthModal()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium">
-              ${pf.authUpdateCv}
-            </button>
-            <a href="/login.html" class="block px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-blue-600 dark:text-blue-400 font-semibold">
-              ${pf.authSwitchSso}
-            </a>
-          </div>
-          <div class="pt-1 border-t border-slate-100 dark:border-slate-800">
-            <button onclick="logoutPortalUser()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 font-semibold">
-              ${pf.authLogoutCandidate}
-            </button>
+          <!-- Clean Luxury Profile Dropdown Menu -->
+          <div class="mega-dropdown-panel absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-50 text-xs">
+            <div class="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
+              <div class="font-bold text-slate-900 dark:text-white truncate">${u.full_name}</div>
+              <div class="text-[11px] text-slate-500 font-mono truncate mt-0.5">${u.email || "candidate@hiremind.vn"}</div>
+            </div>
+            <div class="py-1 space-y-0.5">
+              <button onclick="switchPortalSection('my_apps')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold flex items-center justify-between">
+                <span>${pf.authMyApps}</span>
+                <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-mono text-[10px]">${(portalState.savedJobs || []).length}</span>
+              </button>
+              <button onclick="openCandidateAuthModal()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium">
+                ${pf.authUpdateCv}
+              </button>
+              <a href="/login.html" class="block px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-blue-600 dark:text-blue-400 font-semibold">
+                ${pf.authSwitchSso}
+              </a>
+            </div>
+            <div class="pt-1 border-t border-slate-100 dark:border-slate-800">
+              <button onclick="logoutPortalUser()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 font-semibold">
+                ${pf.authLogoutCandidate}
+              </button>
+            </div>
           </div>
         </div>
+        <button type="button" onclick="logoutPortalUser()" title="Đăng xuất tài khoản"
+          class="px-2.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/70 text-red-600 dark:text-red-300 border border-red-200/80 dark:border-red-800 text-xs font-bold transition flex items-center gap-1 whitespace-nowrap">
+          <span>🚪</span>
+          <span class="hidden md:inline">${pDict().btnLogout || "Đăng xuất"}</span>
+        </button>
       </div>
     `;
   } else {
     const locComp = translateEmployerName(u.org_id, u.company_name);
     authBar.innerHTML = `
-      <div class="relative mega-nav-item">
-        <a href="/index.html?org_id=${encodeURIComponent(u.org_id)}"
-          class="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-indigo-50/80 hover:bg-indigo-100/80 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-800 transition whitespace-nowrap">
-          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-600 to-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
-            B2B
-          </div>
-          <div class="text-left leading-none hidden sm:block">
-            <div class="text-xs font-bold text-indigo-950 dark:text-indigo-200 max-w-[140px] truncate">${locComp}</div>
-            <div class="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">${u.org_id}</div>
-          </div>
-          <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </a>
+      <div class="flex items-center gap-1.5">
+        <div class="relative mega-nav-item">
+          <a href="/index.html?org_id=${encodeURIComponent(u.org_id)}"
+            class="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-indigo-50/80 hover:bg-indigo-100/80 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-800 transition whitespace-nowrap">
+            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-600 to-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
+              B2B
+            </div>
+            <div class="text-left leading-none hidden sm:block">
+              <div class="text-xs font-bold text-indigo-950 dark:text-indigo-200 max-w-[140px] truncate">${locComp}</div>
+              <div class="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">${u.org_id}</div>
+            </div>
+            <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </a>
 
-        <div class="mega-dropdown-panel absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-50 text-xs">
-          <div class="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
-            <div class="font-bold text-slate-900 dark:text-white truncate">${locComp}</div>
-            <div class="text-[11px] text-indigo-600 font-mono mt-0.5">Tenant: ${u.org_id}</div>
-          </div>
-          <div class="py-1 space-y-0.5">
-            <a href="/index.html?org_id=${encodeURIComponent(u.org_id)}" class="block px-3 py-2 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 text-indigo-700 dark:text-indigo-300 font-bold">
-              ${pf.authOpenAts}
-            </a>
-            <button onclick="openEmployerAuthModal()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium">
-              ${pf.authSwitchTenant}
-            </button>
-            <a href="/login.html?role=employer" class="block px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-blue-600 font-semibold">
-              ${pf.authB2bSso}
-            </a>
-          </div>
-          <div class="pt-1 border-t border-slate-100 dark:border-slate-800">
-            <button onclick="logoutPortalUser()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 font-semibold">
-              ${pf.authLogoutEmp}
-            </button>
+          <div class="mega-dropdown-panel absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-50 text-xs">
+            <div class="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
+              <div class="font-bold text-slate-900 dark:text-white truncate">${locComp}</div>
+              <div class="text-[11px] text-indigo-600 font-mono mt-0.5">Tenant: ${u.org_id}</div>
+            </div>
+            <div class="py-1 space-y-0.5">
+              <a href="/index.html?org_id=${encodeURIComponent(u.org_id)}" class="block px-3 py-2 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 text-indigo-700 dark:text-indigo-300 font-bold">
+                ${pf.authOpenAts}
+              </a>
+              <button onclick="openEmployerAuthModal()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium">
+                ${pf.authSwitchTenant}
+              </button>
+              <a href="/login.html?role=employer" class="block px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-blue-600 font-semibold">
+                ${pf.authB2bSso}
+              </a>
+            </div>
+            <div class="pt-1 border-t border-slate-100 dark:border-slate-800">
+              <button onclick="logoutPortalUser()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 font-semibold">
+                ${pf.authLogoutEmp}
+              </button>
+            </div>
           </div>
         </div>
+        <button type="button" onclick="logoutPortalUser()" title="Đăng xuất tài khoản"
+          class="px-2.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/70 text-red-600 dark:text-red-300 border border-red-200/80 dark:border-red-800 text-xs font-bold transition flex items-center gap-1 whitespace-nowrap">
+          <span>🚪</span>
+          <span class="hidden md:inline">${pDict().btnLogout || "Đăng xuất"}</span>
+        </button>
       </div>
     `;
   }
@@ -4522,6 +4536,8 @@ function renderPortalHeader() {
 function logoutPortalUser() {
   portalState.currentUser = null;
   localStorage.removeItem("hiremind_portal_user");
+  localStorage.removeItem("hiremind_active_role");
+  localStorage.removeItem("hiremind_active_org_id");
   renderPortalHeader();
   renderPortalMain();
   showPortalToast(pDict().toastLoggedOut);
@@ -9945,7 +9961,7 @@ function localizePublicFooterAndTopBar() {
         </div>
       </div>
 
-      <!-- COLUMN 5 (3 Cols): Ứng dụng di động, Chứng nhận Bộ Công Thương & Mạng xã hội -->
+      <!-- COLUMN 5 (3 Cols): Ứng dụng di động & Mạng xã hội -->
       <div class="lg:col-span-3 space-y-5">
         <div class="space-y-2.5">
           <h4 class="font-bold text-white text-sm tracking-wide">${af.col5AppTitle}</h4>
@@ -9966,23 +9982,6 @@ function localizePublicFooterAndTopBar() {
                 <div class="text-[9px] text-slate-300">${af.col5DownloadOn}</div>
                 <div class="text-xs font-bold">Google Play</div>
               </div>
-            </button>
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <h4 class="font-bold text-white text-sm tracking-wide">${af.col5CertifiedBy}</h4>
-          <div class="flex items-center gap-3">
-            <button onclick="openFunctionalPageModal('ecommerce_policy')"
-              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white border-2 border-white/90 shadow-md hover:scale-105 transition">
-              <span class="w-6 h-6 rounded-full bg-white text-red-600 font-bold flex items-center justify-center text-xs">✓</span>
-              <div class="text-left leading-tight">
-                <div class="text-[9px] font-bold uppercase tracking-wider">${af.col5RegisteredMoit}</div>
-              </div>
-            </button>
-            <button onclick="openFunctionalPageModal('privacy')"
-              class="px-2.5 py-1.5 rounded-xl bg-blue-900/70 border border-blue-700 text-[10px] font-semibold text-cyan-300 hover:bg-blue-900 transition">
-              🔒 ISO/IEC 27001<br/>NĐ 13/2023/NĐ-CP
             </button>
           </div>
         </div>
@@ -10019,8 +10018,8 @@ function localizePublicFooterAndTopBar() {
     <div class="pt-5 border-t border-blue-900/70 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
       <div class="flex items-center gap-6 flex-wrap">
         <div class="flex items-center gap-2">
-          <span class="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 text-slate-950 font-bold flex items-center justify-center text-xs">HM</span>
-          <span class="font-bold text-white">© HireMindWorks</span>
+          <img src="/logo.png" alt="TechCorp HireMind Logo" class="w-7 h-7 rounded-lg bg-white p-0.5 object-contain shadow-sm" />
+          <span class="font-bold text-white">© TechCorp HireMindWorks</span>
         </div>
         <div class="flex items-center gap-1.5 text-cyan-300 font-semibold">
           <span>hiremind</span>

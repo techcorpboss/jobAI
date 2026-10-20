@@ -1,15 +1,29 @@
 import json
 import os
+import re
 import sqlite3
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
+from dotenv import load_dotenv
 
 from ai_engine import (
     compute_content_hash,
     generate_final_rubric_evaluation,
     screen_resume_pipeline,
 )
+from mysql_setup import (
+    DB_ENGINE,
+    DB_HOST,
+    DB_NAME,
+    DB_PASSWORD,
+    DB_PORT,
+    DB_USER,
+    provision_and_sync_mysql,
+)
+
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "hiremind_vn.db")
 DEFAULT_ORG_ID = "org_vn_fdi_01"
@@ -19,10 +33,172 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def get_conn() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+class DualRow(dict):
+    """Supports both dictionary key lookup row['id'] and positional index lookup row[0]."""
+
+    def __init__(self, columns: List[str], values: Tuple[Any, ...]) -> None:
+        super().__init__(zip(columns, values))
+        self._values = tuple(values)
+
+    def __getitem__(self, key: Any) -> Any:
+        if isinstance(key, int):
+            return self._values[key]
+        return super().__getitem__(key)
+
+
+def _translate_sql_for_mysql(sql: str) -> str:
+    q = sql.strip()
+    q = re.sub(r"(?i)\bINSERT\s+OR\s+REPLACE\s+INTO\b", "REPLACE INTO", q)
+    q = re.sub(r"(?i)\bINSERT\s+OR\s+IGNORE\s+INTO\b", "INSERT IGNORE INTO", q)
+    q = re.sub(r"(?i),\s*a\.rowid\s+ASC", ", a.id ASC", q)
+    q = re.sub(r"(?i),\s*rowid\s+DESC", ", id DESC", q)
+    q = re.sub(r"(?i),\s*rowid\s+ASC", ", id ASC", q)
+    q = re.sub(r"(?i)\bWHERE\s+key\s*=", "WHERE `key` =", q)
+    q = q.replace("?", "%s")
+    return q
+
+
+class DualEngineCursor:
+    def __init__(self, sqlite_cur: sqlite3.Cursor, mysql_cur: Optional[Any] = None) -> None:
+        self._sqlite_cur = sqlite_cur
+        self._mysql_cur = mysql_cur
+        self._last_rows: Optional[List[DualRow]] = None
+
+    def execute(self, sql: str, params: Tuple[Any, ...] = ()) -> "DualEngineCursor":
+        self._last_rows = None
+        is_select = sql.lstrip().upper().startswith("SELECT")
+
+        if self._mysql_cur is not None:
+            try:
+                mysql_sql = _translate_sql_for_mysql(sql)
+                self._mysql_cur.execute(mysql_sql, tuple(params) if params else None)
+                if is_select and self._mysql_cur.description:
+                    cols = [col[0] for col in self._mysql_cur.description]
+                    raw_rows = self._mysql_cur.fetchall()
+                    self._last_rows = [DualRow(cols, r) for r in raw_rows]
+                    return self
+            except Exception:
+                pass
+
+        # Mirror writes to SQLite & fallback for SELECT if MySQL unavailable
+        self._sqlite_cur.execute(sql, params)
+        if is_select and self._sqlite_cur.description:
+            cols = [col[0] for col in self._sqlite_cur.description]
+            raw_rows = self._sqlite_cur.fetchall()
+            self._last_rows = [DualRow(cols, tuple(r)) for r in raw_rows]
+        return self
+
+    def executemany(self, sql: str, seq_of_params: List[Tuple[Any, ...]]) -> "DualEngineCursor":
+        if self._mysql_cur is not None:
+            try:
+                mysql_sql = _translate_sql_for_mysql(sql)
+                self._mysql_cur.executemany(mysql_sql, seq_of_params)
+            except Exception:
+                pass
+        self._sqlite_cur.executemany(sql, seq_of_params)
+        return self
+
+    def executescript(self, script: str) -> "DualEngineCursor":
+        self._sqlite_cur.executescript(script)
+        return self
+
+    def fetchone(self) -> Optional[DualRow]:
+        if self._last_rows is not None:
+            return self._last_rows[0] if self._last_rows else None
+        r = self._sqlite_cur.fetchone()
+        if r is None:
+            return None
+        cols = [col[0] for col in self._sqlite_cur.description]
+        return DualRow(cols, tuple(r))
+
+    def fetchall(self) -> List[DualRow]:
+        if self._last_rows is not None:
+            return self._last_rows
+        rows = self._sqlite_cur.fetchall()
+        if not rows or not self._sqlite_cur.description:
+            return []
+        cols = [col[0] for col in self._sqlite_cur.description]
+        return [DualRow(cols, tuple(r)) for r in rows]
+
+
+class DualEngineConnection:
+    def __init__(self, sqlite_conn: sqlite3.Connection, mysql_conn: Optional[Any] = None) -> None:
+        self._sqlite_conn = sqlite_conn
+        self._mysql_conn = mysql_conn
+
+    def cursor(self) -> DualEngineCursor:
+        m_cur = self._mysql_conn.cursor() if self._mysql_conn is not None else None
+        return DualEngineCursor(self._sqlite_conn.cursor(), m_cur)
+
+    def commit(self) -> None:
+        if self._mysql_conn is not None:
+            try:
+                self._mysql_conn.commit()
+            except Exception:
+                pass
+        self._sqlite_conn.commit()
+
+    def close(self) -> None:
+        if self._mysql_conn is not None:
+            try:
+                self._mysql_conn.close()
+            except Exception:
+                pass
+        self._sqlite_conn.close()
+
+
+def get_conn() -> Any:
+    sqlite_conn = sqlite3.connect(DB_PATH)
+    sqlite_conn.row_factory = sqlite3.Row
+    mysql_conn = None
+    if DB_ENGINE == "mysql":
+        try:
+            import pymysql
+
+            mysql_conn = pymysql.connect(
+                host=DB_HOST,
+                port=DB_PORT,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB_NAME,
+                charset="utf8mb4",
+                autocommit=False,
+                connect_timeout=2,
+            )
+        except Exception:
+            mysql_conn = None
+    return DualEngineConnection(sqlite_conn, mysql_conn)
+
+
+def get_db_engine_status() -> Dict[str, Any]:
+    try:
+        import pymysql
+
+        c = pymysql.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME,
+            charset="utf8mb4",
+            connect_timeout=2,
+        )
+        ver = c.get_server_info()
+        c.close()
+        return {
+            "engine": "MySQL",
+            "version": ver,
+            "host": f"{DB_HOST}:{DB_PORT}",
+            "database": DB_NAME,
+            "status": "connected",
+        }
+    except Exception as e:
+        return {
+            "engine": "SQLite (Fallback)",
+            "database": "hiremind_vn.db",
+            "status": "connected",
+            "mysql_note": str(e),
+        }
 
 
 def init_db() -> None:

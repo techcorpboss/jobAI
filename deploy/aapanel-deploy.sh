@@ -56,8 +56,8 @@ git reset --hard origin/main
 # để Nginx của aaPanel phục vụ trực tiếp cực nhanh
 cp -rf "${PROJECT_DIR}/frontend/public/." "${PROJECT_DIR}/"
 
-# 3. Thiết lập môi trường Python Virtualenv & Cài đặt thư viện FastAPI
-echo "🐍 [3/6] Thiết lập Python Virtualenv và cài đặt phụ thuộc Backend..."
+# 3. Thiết lập môi trường Python Virtualenv, MySQL Database (jobai_db) & Phụ thuộc Backend
+echo "🐍 [3/6] Thiết lập Python Virtualenv, Cơ sở dữ liệu MySQL (jobai_db) và cài đặt Backend..."
 cd "${PROJECT_DIR}/backend"
 if [ ! -d ".venv" ]; then
     python3 -m venv .venv
@@ -66,8 +66,70 @@ fi
 ./.venv/bin/pip install --upgrade pip -q
 ./.venv/bin/pip install -r requirements.txt -q
 
-# Khởi tạo & kiểm tra toàn vẹn CSDL SQLite (24 bảng + RBAC + 30 JD + 150 CV)
-./.venv/bin/python -c "import main; print('✅ SQLite DB & Dynamic RBAC initialized successfully!')"
+# 3.1. Tự động khởi tạo Cơ sở dữ liệu MySQL (jobai_db) trên Ubuntu / aaPanel
+echo "🗄️  Đang khởi tạo & đồng bộ Cơ sở dữ liệu MySQL (jobai_db)..."
+MYSQL_BIN=""
+if [ -x "/www/server/mysql/bin/mysql" ]; then
+    MYSQL_BIN="/www/server/mysql/bin/mysql"
+elif command -v mysql >/dev/null 2>&1; then
+    MYSQL_BIN="$(command -v mysql)"
+else
+    apt-get update -y >/dev/null 2>&1 || true
+    apt-get install -y mariadb-server mariadb-client >/dev/null 2>&1 || apt-get install -y mysql-server mysql-client >/dev/null 2>&1 || true
+    systemctl enable mariadb >/dev/null 2>&1 || systemctl enable mysql >/dev/null 2>&1 || true
+    systemctl start mariadb >/dev/null 2>&1 || systemctl start mysql >/dev/null 2>&1 || true
+    MYSQL_BIN="$(command -v mysql || true)"
+fi
+
+DB_USER_CFG="jobai_user"
+DB_PASS_CFG="root123@"
+DB_NAME_CFG="jobai_db"
+
+if [ -n "${MYSQL_BIN}" ]; then
+    # Lấy mật khẩu root MySQL của aaPanel (nếu có)
+    AAPANEL_ROOT_PWD=""
+    if [ -f "/www/server/panel/data/default.db" ]; then
+        AAPANEL_ROOT_PWD=$(python3 -c "import sqlite3; conn=sqlite3.connect('/www/server/panel/data/default.db'); c=conn.cursor(); c.execute('SELECT mysql_root FROM config LIMIT 1'); r=c.fetchone(); print(r[0] if r and r[0] else '')" 2>/dev/null || true)
+    fi
+
+    MYSQL_CMD=""
+    if [ -n "${AAPANEL_ROOT_PWD}" ] && "${MYSQL_BIN}" -uroot -p"${AAPANEL_ROOT_PWD}" -e "SELECT 1;" >/dev/null 2>&1; then
+        MYSQL_CMD="${MYSQL_BIN} -uroot -p${AAPANEL_ROOT_PWD}"
+    elif "${MYSQL_BIN}" -uroot -proot123@ -e "SELECT 1;" >/dev/null 2>&1; then
+        MYSQL_CMD="${MYSQL_BIN} -uroot -proot123@"
+    elif "${MYSQL_BIN}" -uroot -e "SELECT 1;" >/dev/null 2>&1; then
+        MYSQL_CMD="${MYSQL_BIN} -uroot"
+    fi
+
+    if [ -n "${MYSQL_CMD}" ]; then
+        ${MYSQL_CMD} -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME_CFG}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || true
+        ${MYSQL_CMD} -e "CREATE USER IF NOT EXISTS '${DB_USER_CFG}'@'localhost' IDENTIFIED BY '${DB_PASS_CFG}';" || true
+        ${MYSQL_CMD} -e "CREATE USER IF NOT EXISTS '${DB_USER_CFG}'@'127.0.0.1' IDENTIFIED BY '${DB_PASS_CFG}';" || true
+        ${MYSQL_CMD} -e "ALTER USER '${DB_USER_CFG}'@'localhost' IDENTIFIED BY '${DB_PASS_CFG}';" || true
+        ${MYSQL_CMD} -e "ALTER USER '${DB_USER_CFG}'@'127.0.0.1' IDENTIFIED BY '${DB_PASS_CFG}';" || true
+        ${MYSQL_CMD} -e "GRANT ALL PRIVILEGES ON \`${DB_NAME_CFG}\`.* TO '${DB_USER_CFG}'@'localhost';" || true
+        ${MYSQL_CMD} -e "GRANT ALL PRIVILEGES ON \`${DB_NAME_CFG}\`.* TO '${DB_USER_CFG}'@'127.0.0.1';" || true
+        ${MYSQL_CMD} -e "FLUSH PRIVILEGES;" || true
+
+        if [ -f "${PROJECT_DIR}/database/jobai_mysql.sql" ]; then
+            ${MYSQL_CMD} --default-character-set=utf8mb4 "${DB_NAME_CFG}" < "${PROJECT_DIR}/database/jobai_mysql.sql" || true
+            echo "✅ Đã nạp thành công cấu trúc 25 bảng & dữ liệu vào MySQL (${DB_NAME_CFG}) từ database/jobai_mysql.sql!"
+        fi
+    fi
+fi
+
+# Ghi cấu hình kết nối MySQL vào backend/.env
+cat > "${PROJECT_DIR}/backend/.env" <<EOF
+DB_ENGINE=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=${DB_USER_CFG}
+DB_PASSWORD=${DB_PASS_CFG}
+DB_NAME=${DB_NAME_CFG}
+EOF
+
+# Khởi tạo & đồng bộ toàn vẹn CSDL MySQL + SQLite (25 bảng + RBAC + 30 JD + 150 CV)
+./.venv/bin/python -c "import main; main.on_startup(); print('✅ MySQL (jobai_db) & Dynamic RBAC initialized successfully!')"
 
 # 4. Khởi chạy dịch vụ Backend FastAPI (Port 8010) qua PM2 hoặc Systemd
 echo "⚡ [4/6] Khởi chạy dịch vụ FastAPI Backend trên cổng ${BACKEND_PORT}..."

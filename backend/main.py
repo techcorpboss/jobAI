@@ -20,7 +20,14 @@ from ai_engine import (
     test_ai_provider_connection,
     update_ai_provider_config,
 )
-from database import DEFAULT_ORG_ID, get_conn, init_db, now_iso
+from database import (
+    DEFAULT_ORG_ID,
+    get_conn,
+    get_db_engine_status,
+    init_db,
+    now_iso,
+    provision_and_sync_mysql,
+)
 
 app = FastAPI(
     title="HireMind AI Vietnam - Multilingual Recruitment & AI Interview API",
@@ -45,6 +52,10 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 def on_startup() -> None:
     init_db()
     _init_extended_enterprise_tables()
+    try:
+        provision_and_sync_mysql(export_sql_dump=False)
+    except Exception:
+        pass
 
 
 def _parse_json_field(val: Any, default: Any) -> Any:
@@ -150,6 +161,7 @@ def health_check() -> Dict[str, Any]:
     return {
         "status": "ok",
         "service": "HireMind AI Multilingual Backend",
+        "database": get_db_engine_status(),
         "compliance": ["Nghị định 13/2023/NĐ-CP (Việt Nam)", "GDPR Ready", "Human-in-the-loop Enforced"],
         "supported_languages": ["vi", "en", "ja", "ko", "zh", "th", "lo", "km"],
         "ai_provider": get_ai_provider_public_info(),
