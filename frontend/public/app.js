@@ -4,11 +4,24 @@ const API_BASE =
     ? `http://${window.location.hostname}:8010`
     : "";
 
+const _initSessionUser = (() => {
+  try {
+    const raw = localStorage.getItem("hiremind_portal_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+})();
+
 const state = {
   activeTab: "dashboard",
   lang: localStorage.getItem("hiremind_lang") || "vi",
-  userRole: "hr_admin",
-  activeOrgId: "ALL",
+  userRole: _initSessionUser?.rbac_role_id || localStorage.getItem("hiremind_active_role") || "hr_admin",
+  role: _initSessionUser?.rbac_role_id || localStorage.getItem("hiremind_active_role") || "hr_admin",
+  activeOrgId:
+    _initSessionUser?.org_id && _initSessionUser.org_id !== "ALL"
+      ? _initSessionUser.org_id
+      : localStorage.getItem("hiremind_active_org_id") || "ALL",
   blindMode: false,
   selectedJobId: "all",
   interviewJobId: "job_01",

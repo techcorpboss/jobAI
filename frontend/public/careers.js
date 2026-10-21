@@ -4,6 +4,30 @@ const API_BASE =
     ? `http://${window.location.hostname}:8010`
     : "";
 
+function getValidPortalSessionUser() {
+  try {
+    const rawUser = localStorage.getItem("hiremind_portal_user");
+    const token = localStorage.getItem("hiremind_session_token");
+    if (!rawUser || !token) {
+      localStorage.removeItem("hiremind_portal_user");
+      localStorage.removeItem("hiremind_session_token");
+      return null;
+    }
+    const u = JSON.parse(rawUser);
+    if (!u || (!u.email && !u.full_name && !u.company_name)) {
+      return null;
+    }
+    return u;
+  } catch (e) {
+    return null;
+  }
+}
+
+function isEmployerOrAdminSession() {
+  const u = getValidPortalSessionUser();
+  return Boolean(u && (u.role === "employer" || u.role === "admin_ats" || u.role === "hr_admin"));
+}
+
 const portalState = {
   lang: localStorage.getItem("hiremind_lang") || "vi",
   dark: localStorage.getItem("hiremind_portal_theme") === "dark",
@@ -28,7 +52,7 @@ const portalState = {
     jobs: [],
   },
   demoAccounts: { employers: [], candidates: [] },
-  currentUser: JSON.parse(localStorage.getItem("hiremind_portal_user") || "null"),
+  currentUser: getValidPortalSessionUser(),
   myApplications: [],
   trackQuery: "",
 };
@@ -4408,10 +4432,42 @@ function renderPortalHeader() {
       .join("");
   }
 
+  portalState.currentUser = getValidPortalSessionUser();
+  const u = portalState.currentUser;
+  const isEmpOrAdmin = isEmployerOrAdminSession();
+
+  const topAdsLink = document.getElementById("top-bar-ads-link");
+  const topAtsLink = document.getElementById("footer-ats-link");
+  const megaLocManage = document.getElementById("mega-loc-manage");
+  if (topAdsLink) {
+    if (isEmpOrAdmin) {
+      topAdsLink.classList.remove("hidden");
+      topAdsLink.classList.add("flex");
+    } else {
+      topAdsLink.classList.add("hidden");
+      topAdsLink.classList.remove("flex");
+    }
+  }
+  if (topAtsLink) {
+    if (isEmpOrAdmin) {
+      topAtsLink.classList.remove("hidden");
+      topAtsLink.classList.add("flex");
+    } else {
+      topAtsLink.classList.add("hidden");
+      topAtsLink.classList.remove("flex");
+    }
+  }
+  if (megaLocManage) {
+    if (isEmpOrAdmin) {
+      megaLocManage.classList.remove("hidden");
+    } else {
+      megaLocManage.classList.add("hidden");
+    }
+  }
+
   const authBar = document.getElementById("auth-status-bar");
   if (!authBar) return;
 
-  const u = portalState.currentUser;
   if (!u) {
     authBar.innerHTML = `
       <a href="/login.html"
@@ -4423,10 +4479,10 @@ function renderPortalHeader() {
         </svg>
         <span>${pf.authLogin}</span>
       </a>
-      <button onclick="openEmployerAuthModal()"
+      <a href="/login.html?role=employer"
         class="hidden xl:flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50/80 hover:bg-blue-100/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800 text-xs font-semibold transition whitespace-nowrap">
         <span>${pf.authEmployer}</span>
-      </button>
+      </a>
     `;
   } else if (u.role === "candidate") {
     const initials = (u.full_name || "UV")
@@ -4461,9 +4517,6 @@ function renderPortalHeader() {
               <button onclick="switchPortalSection('my_apps')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold flex items-center justify-between">
                 <span>${pf.authMyApps}</span>
                 <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-mono text-[10px]">${(portalState.savedJobs || []).length}</span>
-              </button>
-              <button onclick="openCandidateAuthModal()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium">
-                ${pf.authUpdateCv}
               </button>
               <a href="/login.html" class="block px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-blue-600 dark:text-blue-400 font-semibold">
                 ${pf.authSwitchSso}
@@ -4509,9 +4562,6 @@ function renderPortalHeader() {
               <a href="/index.html?org_id=${encodeURIComponent(u.org_id)}" class="block px-3 py-2 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800 text-indigo-700 dark:text-indigo-300 font-bold">
                 ${pf.authOpenAts}
               </a>
-              <button onclick="openEmployerAuthModal()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium">
-                ${pf.authSwitchTenant}
-              </button>
               <a href="/login.html?role=employer" class="block px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-blue-600 font-semibold">
                 ${pf.authB2bSso}
               </a>
@@ -4536,10 +4586,14 @@ function renderPortalHeader() {
 function logoutPortalUser() {
   portalState.currentUser = null;
   localStorage.removeItem("hiremind_portal_user");
+  localStorage.removeItem("hiremind_session_token");
   localStorage.removeItem("hiremind_active_role");
   localStorage.removeItem("hiremind_active_org_id");
+  try { sessionStorage.clear(); } catch (e) {}
   renderPortalHeader();
   renderPortalMain();
+  if (typeof localizePublicFooterAndTopBar === "function") localizePublicFooterAndTopBar();
+  if (typeof renderPublicAdBanners === "function") renderPublicAdBanners(publicAdBannersState);
   showPortalToast(pDict().toastLoggedOut);
 }
 
@@ -6279,10 +6333,17 @@ function renderEmployersDedicatedView(container) {
                     class="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-semibold">
                     🔍 ${pd.btnFilterByEmployer} (${emp.open_jobs_count})
                   </button>
-                  <a href="/index.html?org_id=${encodeURIComponent(emp.org_id)}"
-                    class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-sm">
-                    ${pd.btnOpenCompanyAts}
-                  </a>
+                  ${
+                    isEmployerOrAdminSession()
+                      ? `<a href="/index.html?org_id=${encodeURIComponent(emp.org_id)}"
+                          class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-sm">
+                          ${pd.btnOpenCompanyAts}
+                        </a>`
+                      : `<a href="/login.html?role=employer"
+                          class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+                          🔐 ${pd.btnEmployerPortal || "Đăng nhập NTD"}
+                        </a>`
+                  }
                 </div>
               </div>
             `;
@@ -6640,6 +6701,10 @@ const QUICK_POST_JOB_I18N = {
 };
 
 function openQuickPostJobModal() {
+  if (!isEmployerOrAdminSession()) {
+    window.location.href = "/login.html?role=employer&auth_required=1";
+    return;
+  }
   const pd = pDict();
   const qd = QUICK_POST_JOB_I18N[portalState.lang] || QUICK_POST_JOB_I18N.en || QUICK_POST_JOB_I18N.vi;
   const mkt = portalState.marketplace || {};
@@ -7029,22 +7094,14 @@ function openCandidateAuthModal() {
         </div>
       </div>
 
-      <!-- Quick Demo Login -->
-      <div class="p-4 rounded-2xl bg-teal-50/80 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 space-y-2.5">
-        <div class="font-extrabold text-teal-900 dark:text-teal-200 text-sm">${pd.candDemoTitle}</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          ${demoCands
-            .map(
-              (c) => `
-            <button onclick="quickLoginEmail('${c.email}')"
-              class="p-3 rounded-xl bg-teal-700 hover:bg-teal-600 text-white font-bold text-left flex items-center justify-between shadow-sm transition">
-              <span>👤 ${c.full_name} (${c.email})</span>
-              <span class="text-xs bg-white/20 px-2 py-0.5 rounded-lg">1-Click &rarr;</span>
-            </button>
-          `
-            )
-            .join("")}
+      <!-- Secure SSO Login Notice -->
+      <div class="p-4 rounded-2xl bg-teal-50/80 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 flex flex-wrap items-center justify-between gap-3">
+        <div class="text-xs text-teal-900 dark:text-teal-200 font-semibold">
+          🔒 Đã có tài khoản Ứng viên? Vui lòng đăng nhập bảo mật bằng Email & Mật khẩu tại Cổng Đăng nhập Tập trung.
         </div>
+        <a href="/login.html?role=candidate" class="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-600 text-white font-bold text-xs shadow-sm transition">
+          🔐 Đăng nhập Ứng viên &rarr;
+        </a>
       </div>
 
       <!-- Registration Form -->
@@ -7055,12 +7112,12 @@ function openCandidateAuthModal() {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold mb-1">${pd.lblCandFullName}</label>
-            <input id="reg-cand-name" type="text" required value="${portalState.lang === "vi" ? "Lê Hoàng Khôi" : "Le Hoang Khoi"}"
+            <input id="reg-cand-name" type="text" required placeholder="${portalState.lang === "vi" ? "Nhập họ và tên của bạn" : "Enter your full name"}"
               class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold" />
           </div>
           <div>
             <label class="block font-bold mb-1">${pd.lblCandEmail}</label>
-            <input id="reg-cand-email" type="email" required value="hoangkhoi.exec@hiremind.vn"
+            <input id="reg-cand-email" type="email" required placeholder="you@example.com"
               class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono" />
           </div>
         </div>
@@ -7068,12 +7125,12 @@ function openCandidateAuthModal() {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold mb-1">${pd.lblCandPhone}</label>
-            <input id="reg-cand-phone" type="text" required value="+84 908 777 999"
+            <input id="reg-cand-phone" type="text" required placeholder="+84 908 xxx xxx"
               class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700" />
           </div>
           <div>
             <label class="block font-bold mb-1">${pd.lblCandExpYears}</label>
-            <input id="reg-cand-exp" type="number" step="0.5" required value="8"
+            <input id="reg-cand-exp" type="number" step="0.5" required value="5"
               class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold" />
           </div>
         </div>
@@ -7087,16 +7144,14 @@ function openCandidateAuthModal() {
 
         <div>
           <label class="block font-bold mb-1">${pd.lblCandSkills}</label>
-          <input id="reg-cand-skills" type="text" required value="System Architecture, Cloud FinOps, Microservices, AI/LLM, Agile OKRs, P&L Management"
+          <input id="reg-cand-skills" type="text" required placeholder="System Architecture, Cloud FinOps, Microservices, AI/LLM"
             class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700" />
         </div>
 
         <div>
           <label class="block font-bold mb-1">${pd.lblCandBio}</label>
-          <textarea id="reg-cand-bio" rows="4" required
-            class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-xs">Full Name: Le Hoang Khoi | Email: hoangkhoi.exec@hiremind.vn | Phone: +84 908 777 999
-Experience: 8+ years VP of Engineering & Enterprise Architecture.
-Core Competencies: System Architecture, Cloud FinOps, Microservices, AI/LLM, Agile OKRs, P&L Management.</textarea>
+          <textarea id="reg-cand-bio" rows="4" required placeholder="Tóm tắt kinh nghiệm làm việc và kỹ năng cốt lõi..."
+            class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-xs"></textarea>
         </div>
 
         <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-500 hover:to-blue-500 text-white font-extrabold shadow-lg">
@@ -7121,7 +7176,7 @@ async function submitCandidateRegister(e) {
       full_name: document.getElementById("reg-cand-name").value,
       email: document.getElementById("reg-cand-email").value,
       phone: document.getElementById("reg-cand-phone").value,
-      experience_years: parseFloat(document.getElementById("reg-cand-exp").value || "8"),
+      experience_years: parseFloat(document.getElementById("reg-cand-exp").value || "5"),
       preferred_sector: document.getElementById("reg-cand-sector").value,
       skills,
       bio_cv_text: document.getElementById("reg-cand-bio").value,
@@ -7129,8 +7184,12 @@ async function submitCandidateRegister(e) {
   });
   if (res.ok) {
     const data = await res.json();
-    portalState.currentUser = data.user;
-    localStorage.setItem("hiremind_portal_user", JSON.stringify(data.user));
+    const sessionToken = data.auth_token || data.session_token || `hm_reg_${Date.now()}`;
+    const userPayload = { ...data.user, session_token: sessionToken };
+    portalState.currentUser = userPayload;
+    localStorage.setItem("hiremind_portal_user", JSON.stringify(userPayload));
+    localStorage.setItem("hiremind_session_token", sessionToken);
+    localStorage.setItem("hiremind_active_role", "candidate");
     portalState.selectedCategory = data.user.preferred_sector || "all";
     closePortalModal();
     renderPortalHeader();
@@ -7149,7 +7208,6 @@ function openEmployerModal() {
 function openEmployerAuthModal() {
   const pd = pDict();
   const pf = pFull();
-  const demoEmps = portalState.demoAccounts.employers || [];
   const sectors = Object.keys(SECTOR_ICONS);
   const countryKeys = Object.keys(COUNTRY_TRANSLATIONS);
   const empSubMap = {
@@ -7179,23 +7237,14 @@ function openEmployerAuthModal() {
         </div>
       </div>
 
-      <!-- Quick Demo Employer Login -->
-      <div class="p-4 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 space-y-2.5">
-        <div class="font-extrabold text-indigo-900 dark:text-indigo-200 text-sm">${pd.empDemoTitle}</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          ${demoEmps
-            .map((emp) => {
-              const locComp = translateEmployerName(emp.org_id, emp.company_name);
-              return `
-            <button onclick="quickLoginEmail('${emp.email}')"
-              class="p-3 rounded-xl bg-white dark:bg-slate-900 hover:border-indigo-600 border border-indigo-200 dark:border-indigo-800 text-left transition shadow-sm">
-              <div class="font-extrabold text-indigo-700 dark:text-indigo-300 text-sm">${locComp}</div>
-              <div class="text-xs text-slate-500 mt-0.5">${pd.lblOrgId} <b>${emp.org_id}</b> • ${emp.email}</div>
-            </button>
-          `;
-            })
-            .join("")}
+      <!-- Secure B2B Employer Login Notice -->
+      <div class="p-4 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex flex-wrap items-center justify-between gap-3">
+        <div class="text-xs text-indigo-900 dark:text-indigo-200 font-semibold">
+          🔒 Doanh nghiệp đã có tài khoản Tenant? Vui lòng đăng nhập xác thực mật khẩu để truy cập Quản trị ATS.
         </div>
+        <a href="/login.html?role=employer" class="px-4 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-xs shadow-sm transition">
+          🔐 Đăng nhập Nhà tuyển dụng &rarr;
+        </a>
       </div>
 
       <!-- New Employer Registration Form -->
@@ -7207,7 +7256,7 @@ function openEmployerAuthModal() {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold mb-1">${pd.lblEmpCompanyName}</label>
-            <input id="reg-emp-company" type="text" required value="VinaPacific Technology & Investment Group"
+            <input id="reg-emp-company" type="text" required placeholder="Tên Doanh nghiệp / Tập đoàn"
               class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold" />
           </div>
           <div>
@@ -7221,12 +7270,12 @@ function openEmployerAuthModal() {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold mb-1">${pd.lblEmpAdminName}</label>
-            <input id="reg-emp-admin" type="text" required value="Tran Thanh Ha (CHRO)"
+            <input id="reg-emp-admin" type="text" required placeholder="Họ tên Giám đốc Nhân sự / Admin"
               class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700" />
           </div>
           <div>
             <label class="block font-bold mb-1">${pd.lblEmpEmail}</label>
-            <input id="reg-emp-email" type="email" required value="chro@vinapacific.vn"
+            <input id="reg-emp-email" type="email" required placeholder="hr@company.com"
               class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono" />
           </div>
         </div>
@@ -7240,7 +7289,7 @@ function openEmployerAuthModal() {
           </div>
           <div>
             <label class="block font-bold mb-1">${pd.lblEmpSubdomain}</label>
-            <input id="reg-emp-sub" type="text" required value="vinapacific.hiremind.vn"
+            <input id="reg-emp-sub" type="text" required placeholder="company.hiremind.vn"
               class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono" />
           </div>
         </div>
@@ -7273,8 +7322,12 @@ async function submitEmployerRegister(e) {
   });
   if (res.ok) {
     const data = await res.json();
-    portalState.currentUser = data.user;
-    localStorage.setItem("hiremind_portal_user", JSON.stringify(data.user));
+    const sessionToken = data.auth_token || data.session_token || `hm_emp_${Date.now()}`;
+    const userPayload = { ...data.user, session_token: sessionToken };
+    portalState.currentUser = userPayload;
+    localStorage.setItem("hiremind_portal_user", JSON.stringify(userPayload));
+    localStorage.setItem("hiremind_session_token", sessionToken);
+    localStorage.setItem("hiremind_active_role", "employer");
     localStorage.setItem("hiremind_active_org_id", data.user.org_id);
     closePortalModal();
     await loadMarketplaceData();
@@ -7286,28 +7339,8 @@ async function submitEmployerRegister(e) {
 }
 
 async function quickLoginEmail(email) {
-  const res = await fetch(`${API_BASE}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-  if (res.ok) {
-    const data = await res.json();
-    portalState.currentUser = data.user;
-    localStorage.setItem("hiremind_portal_user", JSON.stringify(data.user));
-    closePortalModal();
-    renderPortalHeader();
-    if (data.user.role === "employer") {
-      localStorage.setItem("hiremind_active_org_id", data.user.org_id);
-      portalState.selectedEmployer = data.user.org_id === "ALL" ? "all" : data.user.org_id;
-      renderPortalMain();
-      showPortalToast(`🏢 ${translateEmployerName(data.user.org_id, data.user.company_name)} (${data.user.org_id})`);
-    } else {
-      portalState.trackQuery = data.user.email;
-      renderPortalMain();
-      showPortalToast(`👤 ${data.user.full_name}`);
-    }
-  }
+  // Passwordless quick login is disabled for security; redirect to centralized SSO login
+  window.location.href = "/login.html?auth_required=1";
 }
 
 /* ============================================================================
@@ -9628,6 +9661,8 @@ function renderPublicAdWings(banners) {
   const finalLeftAds = leftAds.length > 0 ? leftAds : DEFAULT_PUBLIC_AD_BANNERS.filter((b) => String(b.position || b.placement || "").startsWith("left"));
   const finalRightAds = rightAds.length > 0 ? rightAds : DEFAULT_PUBLIC_AD_BANNERS.filter((b) => String(b.position || b.placement || "").startsWith("right"));
 
+  const canManageAds = isEmployerOrAdminSession();
+
   if (leftWing) {
     leftWing.innerHTML = `
       <div class="px-3 py-2 rounded-xl bg-gradient-to-r from-slate-900 to-blue-950 text-white border border-blue-800/70 flex items-center justify-between gap-1 shadow-sm">
@@ -9635,7 +9670,7 @@ function renderPublicAdWings(banners) {
           <span>👑</span>
           <span>${af.leftWingTitle} (${finalLeftAds.length})</span>
         </span>
-        <a href="/index.html?tab=ads" class="text-[9px] font-bold text-cyan-300 hover:underline">${af.createAdShort}</a>
+        ${canManageAds ? `<a href="/index.html?tab=ads" class="text-[9px] font-bold text-cyan-300 hover:underline">${af.createAdShort}</a>` : ""}
       </div>
       ${finalLeftAds.map((ad) => renderSkyscraperBannerCard(ad, "left")).join("")}
       <button onclick="openVipMechanismModal()"
@@ -9656,11 +9691,15 @@ function renderPublicAdWings(banners) {
         <button onclick="openVipMechanismModal()" class="text-[9px] font-bold text-amber-300 hover:underline">${af.vipPricingBtn}</button>
       </div>
       ${finalRightAds.map((ad) => renderSkyscraperBannerCard(ad, "right")).join("")}
-      <a href="/index.html?tab=ads"
-        class="w-full p-2.5 rounded-2xl bg-indigo-50/90 hover:bg-indigo-100 dark:bg-slate-900 border border-dashed border-indigo-400 text-indigo-900 dark:text-indigo-300 text-center space-y-0.5 transition shadow-sm block">
-        <div class="text-[10px] font-extrabold">${af.adminAdTitle}</div>
-        <div class="text-[9px] text-indigo-700 dark:text-slate-400">${af.adminAdSub}</div>
-      </a>
+      ${
+        canManageAds
+          ? `<a href="/index.html?tab=ads"
+              class="w-full p-2.5 rounded-2xl bg-indigo-50/90 hover:bg-indigo-100 dark:bg-slate-900 border border-dashed border-indigo-400 text-indigo-900 dark:text-indigo-300 text-center space-y-0.5 transition shadow-sm block">
+              <div class="text-[10px] font-extrabold">${af.adminAdTitle}</div>
+              <div class="text-[9px] text-indigo-700 dark:text-slate-400">${af.adminAdSub}</div>
+            </a>`
+          : ""
+      }
     `;
   }
 
@@ -9672,7 +9711,7 @@ function renderPublicAdWings(banners) {
           <span class="font-extrabold text-amber-300">${af.mobilePartnersTitle} (${topMobileAds.length})</span>
           <div class="flex items-center gap-2">
             <button onclick="openVipMechanismModal()" class="text-[11px] text-cyan-300 font-bold underline">${af.vipPricingBtn}</button>
-            <a href="/index.html?tab=ads" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-extrabold text-[11px]">${af.createAdShort}</a>
+            ${canManageAds ? `<a href="/index.html?tab=ads" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-extrabold text-[11px]">${af.createAdShort}</a>` : ""}
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -9699,9 +9738,13 @@ function renderPublicAdWings(banners) {
             <button onclick="openVipMechanismModal()" class="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-amber-300 font-bold text-[11px] transition">
               ${af.vipMechTitle}
             </button>
-            <a href="/index.html?tab=ads" class="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[11px] transition">
-              ${af.adminAdTitle}
-            </a>
+            ${
+              canManageAds
+                ? `<a href="/index.html?tab=ads" class="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[11px] transition">
+                    ${af.adminAdTitle}
+                  </a>`
+                : ""
+            }
           </div>
         </div>
 
@@ -9732,6 +9775,7 @@ function renderStickyBottomAdFooter(adsList) {
   if (!dock) return;
   const af = getAdFooterI18n();
   const ads = (adsList || DEFAULT_PUBLIC_AD_BANNERS).slice(0, 4);
+  const canManageAds = isEmployerOrAdminSession();
 
   if (isStickyFooterCollapsed) {
     dock.innerHTML = `
@@ -9741,7 +9785,7 @@ function renderStickyBottomAdFooter(adsList) {
           <span class="font-extrabold text-amber-300">${af.stickyCollapsedText} (${ads.length} ${af.stickyRunningText})</span>
         </div>
         <div class="flex items-center gap-2">
-          <a href="/index.html?tab=ads" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-extrabold text-[11px]">${af.createAdShort}</a>
+          ${canManageAds ? `<a href="/index.html?tab=ads" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-extrabold text-[11px]">${af.createAdShort}</a>` : ""}
           <button onclick="toggleStickyBottomAdFooter()" class="px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-[11px]">
             ${af.stickyExpandBtn}
           </button>
@@ -9767,9 +9811,13 @@ function renderStickyBottomAdFooter(adsList) {
           <button onclick="openPublicTrafficStatsModal()" class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-mono font-bold text-[10px]">
             🟢 ${af.onlineLabel}: ${Number(publicTrafficStatsState?.online_now || 342).toLocaleString()} • ${af.todayLabel}: ${Number(publicTrafficStatsState?.today_visits || 14820).toLocaleString()} ${af.visitsUnit}
           </button>
-          <a href="/index.html?tab=ads" class="px-2.5 py-0.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[10px] transition">
-            ${af.adminAdTitle}
-          </a>
+          ${
+            canManageAds
+              ? `<a href="/index.html?tab=ads" class="px-2.5 py-0.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[10px] transition">
+                  ${af.adminAdTitle}
+                </a>`
+              : ""
+          }
           <button onclick="toggleStickyBottomAdFooter()" class="px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[10px] transition">
             ${af.stickyCollapseBtn}
           </button>
@@ -9833,6 +9881,7 @@ function renderStickyBottomAdFooter(adsList) {
 function localizePublicFooterAndTopBar() {
   const af = getAdFooterI18n();
   const pd = pDict();
+  const canAccessAts = isEmployerOrAdminSession();
   const setTxt = (id, val) => {
     const el = document.getElementById(id);
     if (el && val) el.textContent = val;
@@ -9917,7 +9966,7 @@ function localizePublicFooterAndTopBar() {
           <li><button onclick="openQuickPostJobModal()" class="hover:text-white hover:underline transition text-left">${af.col2PostJob}</button></li>
           <li><button onclick="openFunctionalPageModal('resume_search')" class="hover:text-white hover:underline transition text-left">${af.col2ResumeSearch}</button></li>
           <li><button onclick="openFunctionalPageModal('market_report')" class="hover:text-white hover:underline transition text-left">${af.col2MarketReport}</button></li>
-          <li><a href="/index.html" class="hover:text-white hover:underline transition block">${af.col2AtsSystem}</a></li>
+          <li><a href="${canAccessAts ? "/index.html" : "/login.html?role=employer"}" class="hover:text-white hover:underline transition block">${af.col2AtsSystem}</a></li>
           <li><button onclick="openEmployerAuthModal('register')" class="hover:text-white hover:underline transition text-left">${af.col2RegisterTenant}</button></li>
           <li><button onclick="openFunctionalPageModal('contact_b2b')" class="hover:text-white hover:underline transition text-left">${af.col2ContactB2b}</button></li>
         </ul>
@@ -10032,11 +10081,9 @@ function localizePublicFooterAndTopBar() {
       </div>
 
       <div class="flex items-center gap-4 flex-wrap text-[11px] text-blue-200/80">
-        <button onclick="openLocationManagerModal()" class="hover:text-white hover:underline">📍 ${af.topBarLoc}</button>
-        <span>•</span>
+        ${canAccessAts ? `<button onclick="openLocationManagerModal()" class="hover:text-white hover:underline">📍 ${af.topBarLoc}</button><span>•</span>` : ""}
         <button onclick="switchPortalSection('tools')" class="hover:text-white hover:underline">${af.bottomGrossNet}</button>
-        <span>•</span>
-        <a href="/index.html" class="text-cyan-300 hover:text-white font-semibold hover:underline" id="footer-ats-link-bottom">${pd.footerAtsLink || "Enterprise ATS →"}</a>
+        ${canAccessAts ? `<span>•</span><a href="/index.html" class="text-cyan-300 hover:text-white font-semibold hover:underline" id="footer-ats-link-bottom">${pd.footerAtsLink || "Enterprise ATS →"}</a>` : ""}
       </div>
     </div>
   `;
@@ -10060,6 +10107,7 @@ async function recordPublicAdClick(bannerId) {
 }
 
 function openVipMechanismModal() {
+  const canManageAds = isEmployerOrAdminSession();
   openPortalModal(`
     <div class="space-y-6 text-xs">
       <!-- Header -->
@@ -10076,10 +10124,17 @@ function openVipMechanismModal() {
           </p>
         </div>
         <div class="flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0">
-          <a href="/index.html?tab=ads"
-            class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs shadow-lg text-center transition">
-            📢 Mở Trang Tạo Tin Quảng Cáo (Admin) &rarr;
-          </a>
+          ${
+            canManageAds
+              ? `<a href="/index.html?tab=ads"
+                  class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs shadow-lg text-center transition">
+                  📢 Mở Trang Tạo Tin Quảng Cáo (Admin) &rarr;
+                </a>`
+              : `<a href="/login.html?role=employer"
+                  class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs shadow-lg text-center transition">
+                  🔐 Đăng nhập Nhà tuyển dụng để Tạo Quảng Cáo &rarr;
+                </a>`
+          }
           <button onclick="closePortalModal()"
             class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition">
             Đóng cửa sổ
@@ -10208,9 +10263,9 @@ function openVipMechanismModal() {
           <div class="font-extrabold text-slate-900 dark:text-white text-xs">📢 Bạn muốn tạo hoặc thay đổi Banner Quảng cáo 2 bên Trái / Phải?</div>
           <div class="text-[11px] text-slate-600 dark:text-slate-300">Truy cập ngay phân hệ <b>Quản trị Quảng cáo & VIP</b> tại trang Admin để tải ảnh Banner, gắn Link Website, Link Fanpage Facebook & bật/tắt chiến dịch tức thì.</div>
         </div>
-        <a href="/index.html?tab=ads"
+        <a href="${canManageAds ? "/index.html?tab=ads" : "/login.html?role=employer"}"
           class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs shrink-0 shadow-md transition">
-          Mở Trang Tạo Tin Quảng Cáo (Admin) &rarr;
+          ${canManageAds ? "Mở Trang Tạo Tin Quảng Cáo (Admin) &rarr;" : "🔐 Đăng nhập để Quản trị Quảng Cáo &rarr;"}
         </a>
       </div>
     </div>
@@ -10795,6 +10850,9 @@ window.addEventListener("DOMContentLoaded", () => {
   loadAndRenderPublicTrafficStats();
 });
 
-
-
-
+window.addEventListener("pageshow", () => {
+  portalState.currentUser = getValidPortalSessionUser();
+  renderPortalHeader();
+  if (typeof localizePublicFooterAndTopBar === "function") localizePublicFooterAndTopBar();
+  if (typeof renderPublicAdBanners === "function") renderPublicAdBanners(publicAdBannersState);
+});

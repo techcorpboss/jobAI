@@ -3472,7 +3472,7 @@ class UpsertPortalUserRequest(BaseModel):
 
 class PortalLoginRequest(BaseModel):
     email: str
-    password: str = "123456"
+    password: str = ""
 
 
 @app.get("/api/users")
@@ -3696,9 +3696,17 @@ class ChangePasswordRequest(BaseModel):
 @app.post("/api/auth/login")
 def portal_login(req: PortalLoginRequest) -> Dict[str, Any]:
     em = req.email.strip().lower()
+    input_pwd = (req.password or "").strip()
+    if not em or not input_pwd:
+        raise HTTPException(
+            status_code=401,
+            detail="Vui lòng nhập đầy đủ Email và Mật khẩu đăng nhập.",
+        )
     conn = get_conn()
     cur = conn.cursor()
     row = cur.execute("SELECT * FROM portal_users WHERE LOWER(email) = ?", (em,)).fetchone()
+    if not row and em == "hr.director@hiremind.vn":
+        row = cur.execute("SELECT * FROM portal_users WHERE id = 'USR-EMP-ALL'").fetchone()
     if not row:
         conn.close()
         raise HTTPException(
@@ -3710,7 +3718,6 @@ def portal_login(req: PortalLoginRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=403, detail="Tài khoản này đang bị tạm khóa bởi Quản trị viên.")
 
     stored_pwd = str(row["password"] or "")
-    input_pwd = (req.password or "123456").strip()
     if not verify_password(input_pwd, stored_pwd):
         conn.close()
         raise HTTPException(
@@ -3731,9 +3738,11 @@ def portal_login(req: PortalLoginRequest) -> Dict[str, Any]:
     updated = cur.execute("SELECT * FROM portal_users WHERE id = ?", (row["id"],)).fetchone()
     conn.close()
     user_dict = _row_to_portal_user(updated)
+    token = generate_session_token(user_dict["id"], user_dict["email"], user_dict["role"])
     return {
         "authenticated": True,
-        "auth_token": generate_session_token(user_dict["id"], user_dict["email"], user_dict["role"]),
+        "auth_token": token,
+        "session_token": token,
         "security": {
             "algorithm": "PBKDF2-HMAC-SHA256",
             "iterations": PASSWORD_HASH_ITERATIONS,

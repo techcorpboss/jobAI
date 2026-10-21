@@ -7,6 +7,42 @@
   <link rel="icon" type="image/png" href="/logo.png" />
   <link rel="shortcut icon" type="image/png" href="/logo.png" />
   <link rel="apple-touch-icon" href="/logo.png" />
+  <script>
+    (function enforceAtsAuthGuard() {
+      function checkAtsSession() {
+        try {
+          const rawUser = localStorage.getItem("hiremind_portal_user");
+          const token = localStorage.getItem("hiremind_session_token");
+          if (!rawUser || !token) {
+            window.location.replace("/login.html?role=admin_ats&auth_required=1");
+            return false;
+          }
+          const u = JSON.parse(rawUser);
+          if (!u || (!u.email && !u.full_name && !u.company_name) || u.role === "candidate") {
+            window.location.replace("/login.html?role=admin_ats&auth_required=1");
+            return false;
+          }
+          return true;
+        } catch (e) {
+          window.location.replace("/login.html?role=admin_ats&auth_required=1");
+          return false;
+        }
+      }
+      checkAtsSession();
+      window.addEventListener("pageshow", function () {
+        checkAtsSession();
+      });
+      window.performSecureAtsLogout = function (e) {
+        if (e) e.preventDefault();
+        localStorage.removeItem("hiremind_portal_user");
+        localStorage.removeItem("hiremind_session_token");
+        localStorage.removeItem("hiremind_active_role");
+        localStorage.removeItem("hiremind_active_org_id");
+        try { sessionStorage.clear(); } catch (err) {}
+        window.location.replace("/login.html?logout=1");
+      };
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -197,7 +233,7 @@
               <span id="lbl-sidebar-public-btn" class="truncate">Cổng Public</span>
               <span id="lbl-open-standalone-careers" class="hidden"></span>
             </a>
-            <a href="/login.html?logout=1" title="Đăng xuất tài khoản khỏi hệ thống"
+            <a href="/login.html?logout=1" onclick="performSecureAtsLogout(event)" title="Đăng xuất tài khoản khỏi hệ thống"
               class="h-8 px-2.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/70 dark:hover:bg-red-900/70 text-red-600 dark:text-red-300 border border-red-200/90 dark:border-red-800 font-bold text-[11px] flex items-center justify-center gap-1.5 transition whitespace-nowrap">
               <span>🚪</span>
               <span class="truncate">Đăng xuất</span>
@@ -495,7 +531,7 @@
         </button>
 
         <!-- Logout Button -->
-        <a href="/login.html?logout=1" title="Đăng xuất tài khoản"
+        <a href="/login.html?logout=1" onclick="performSecureAtsLogout(event)" title="Đăng xuất tài khoản"
           class="h-9 px-3 rounded-xl border border-red-200/90 dark:border-red-800 bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/70 text-red-600 dark:text-red-300 text-xs font-bold flex items-center gap-1.5 transition shrink-0 whitespace-nowrap">
           <span>🚪</span>
           <span class="hidden sm:inline">Đăng xuất</span>
