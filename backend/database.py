@@ -120,6 +120,18 @@ class DualEngineCursor:
         cols = [col[0] for col in self._sqlite_cur.description]
         return [DualRow(cols, tuple(r)) for r in rows]
 
+    @property
+    def rowcount(self) -> int:
+        s_cnt = getattr(self._sqlite_cur, "rowcount", 0) or 0
+        if self._mysql_cur is not None:
+            m_cnt = getattr(self._mysql_cur, "rowcount", 0) or 0
+            return max(s_cnt, m_cnt)
+        return s_cnt
+
+    @property
+    def lastrowid(self) -> Any:
+        return getattr(self._sqlite_cur, "lastrowid", None)
+
 
 class DualEngineConnection:
     def __init__(self, sqlite_conn: sqlite3.Connection, mysql_conn: Optional[Any] = None) -> None:

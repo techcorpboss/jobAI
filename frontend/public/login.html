@@ -694,27 +694,39 @@
       selectAuthRole(currentRole);
     }
 
-    async function performRoleLogin(role, email) {
+    async function performRoleLogin(role, email, password = "") {
       selectAuthRole(role);
       try {
         const res = await fetch(`${API_BASE}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ email, password }),
         });
+        if (res.status === 401 || res.status === 403 || res.status === 404) {
+          const errData = await res.json().catch(() => ({}));
+          showAuthAlert(
+            `❌ ${errData.detail || "Sai tài khoản hoặc mật khẩu đăng nhập. Vui lòng kiểm tra lại!"}`,
+            false
+          );
+          return;
+        }
         if (res.ok) {
           const data = await res.json();
           localStorage.setItem("hiremind_portal_user", JSON.stringify(data.user));
+          if (data.session_token) {
+            localStorage.setItem("hiremind_session_token", data.session_token);
+          }
           if (data.user.org_id) {
             localStorage.setItem("hiremind_active_org_id", data.user.org_id);
           }
           renderActiveSessionState();
+          const secBadge = data.security?.algorithm ? ` <span class="text-[10px] opacity-80">[${data.security.algorithm}]</span>` : "";
           showAuthAlert(
-            `✔ Đăng nhập thành công: <b>${data.user.full_name || data.user.company_name}</b> (${data.user.email}). Bạn có thể nhấn <b>Vào Hệ thống</b> hoặc <b>Đăng xuất</b>.`,
+            `✔ Đăng nhập thành công: <b>${data.user.full_name || data.user.company_name}</b> (${data.user.email})${secBadge}. Bạn có thể nhấn <b>Vào Hệ thống</b> hoặc <b>Đăng xuất</b>.`,
             true
           );
           pendingRedirectTimer = setTimeout(() => {
-            window.location.href = "/careers.html";
+            window.location.href = role === "admin_ats" ? "/index.html" : "/careers.html";
           }, 1200);
           return;
         }
@@ -745,7 +757,7 @@
         })
       );
       renderActiveSessionState();
-      showAuthAlert(`🛡️ Đã xác thực vai trò <b>${roleLabel}</b> (${orgId}). Đang mở Hệ thống Quản trị ATS...`, true);
+      showAuthAlert(`🛡️ Đã xác thực vai trò <b>${roleLabel}</b> (${orgId}) [PBKDF2-HMAC-SHA256]. Đang mở Hệ thống Quản trị ATS...`, true);
       pendingRedirectTimer = setTimeout(() => {
         window.location.href = `/index.html?org_id=${encodeURIComponent(orgId)}&role=${encodeURIComponent(rbacRole)}`;
       }, 1200);
@@ -754,6 +766,7 @@
     async function handleStandardLogin(e) {
       e.preventDefault();
       const email = document.getElementById("login-email-input").value.trim();
+      const password = document.getElementById("login-password-input")?.value || "";
       const tenant = document.getElementById("login-tenant-select")?.value || "TENANT-VN-01";
 
       if (currentRole === "admin_ats") {
@@ -761,7 +774,7 @@
         return;
       }
 
-      await performRoleLogin(currentRole, email);
+      await performRoleLogin(currentRole, email, password);
     }
 
     async function handleStandardRegister(e) {

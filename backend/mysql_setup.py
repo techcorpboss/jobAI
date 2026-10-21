@@ -452,6 +452,26 @@ MYSQL_TABLES_DDL: List[Tuple[str, str]] = [
             `updated_at` VARCHAR(64)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;""",
     ),
+    (
+        "service_products",
+        """CREATE TABLE IF NOT EXISTS `service_products` (
+            `id` VARCHAR(191) PRIMARY KEY,
+            `sku` VARCHAR(191) NOT NULL,
+            `name` VARCHAR(500) NOT NULL,
+            `category` VARCHAR(255) NOT NULL,
+            `price_vnd` DOUBLE DEFAULT 0,
+            `price_usd` DOUBLE DEFAULT 0,
+            `billing_cycle` VARCHAR(191) DEFAULT 'Theo tháng',
+            `ai_quota_tokens` INT DEFAULT 50000,
+            `job_slots` INT DEFAULT 10,
+            `vip_badge` VARCHAR(100) DEFAULT 'PLATINUM_PRO',
+            `features_json` LONGTEXT,
+            `description` LONGTEXT,
+            `status` VARCHAR(64) DEFAULT 'active',
+            `sold_count` INT DEFAULT 0,
+            `created_at` VARCHAR(64)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;""",
+    ),
 ]
 
 

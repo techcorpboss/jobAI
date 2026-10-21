@@ -311,6 +311,14 @@
               </span>
               <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-200/60 shrink-0">B2B</span>
             </button>
+            <button onclick="switchTab('products')" id="tab-btn-products"
+              class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
+              <span class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <span id="ui-nav-products" class="truncate">Quản lý Sản phẩm &amp; Gói Dịch vụ</span>
+              </span>
+              <span id="badge-products-count" class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200/80 shrink-0">8 Gói</span>
+            </button>
             <button onclick="switchTab('users')" id="tab-btn-users"
               class="nav-tab w-full text-left px-3 py-2.5 rounded-xl text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 flex items-center justify-between transition">
               <span class="flex items-center gap-2.5 min-w-0">
@@ -497,6 +505,9 @@
 
     <!-- Dynamic Views Container -->
     <main class="flex-1 p-4 sm:p-8 max-w-[1560px] w-full mx-auto space-y-6">
+      <!-- Universal Contextual CRUD, Print & Excel Import/Export Action Bar for Every Page -->
+      <div id="universal-page-crud-bar" class="hr-card p-3.5 sm:p-4 rounded-2xl border-l-4 border-l-blue-600 flex flex-wrap items-center justify-between gap-3"></div>
+
       <div id="view-dashboard" class="tab-view space-y-6"></div>
       <div id="view-requisitions" class="tab-view hidden space-y-6"></div>
       <div id="view-jobs" class="tab-view hidden space-y-6"></div>
@@ -508,6 +519,7 @@
       <div id="view-strategy" class="tab-view hidden space-y-6"></div>
       <div id="view-careers" class="tab-view hidden space-y-6"></div>
       <div id="view-saas" class="tab-view hidden space-y-6"></div>
+      <div id="view-products" class="tab-view hidden space-y-6"></div>
       <div id="view-users" class="tab-view hidden space-y-6"></div>
       <div id="view-rbac" class="tab-view hidden space-y-6"></div>
       <div id="view-ads" class="tab-view hidden space-y-6"></div>

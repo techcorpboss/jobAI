@@ -1756,6 +1756,7 @@ async function loadAllData() {
       locsRes,
       notifsRes,
       rbacRes,
+      productsRes,
     ] = await Promise.all([
       fetch(`${API_BASE}/api/dashboard?org_id=${orgParam}`),
       fetch(`${API_BASE}/api/jobs?org_id=${orgParam}`),
@@ -1772,6 +1773,7 @@ async function loadAllData() {
       fetch(`${API_BASE}/api/locations`).catch(() => null),
       fetch(`${API_BASE}/api/notifications`).catch(() => null),
       fetch(`${API_BASE}/api/rbac/roles`).catch(() => null),
+      fetch(`${API_BASE}/api/products`).catch(() => null),
     ]);
 
     state.dashboard = await dashRes.json();
@@ -1841,6 +1843,10 @@ async function loadAllData() {
         id: r.id || r.role_id,
       }));
     }
+    if (productsRes && productsRes.ok) {
+      state.productsData = await productsRes.json();
+      state.products = state.productsData.products || [];
+    }
 
     // Ensure interviewJobId and compareJobId belong to the active organization's jobs
     if (state.jobs.length > 0) {
@@ -1885,6 +1891,7 @@ async function loadAllData() {
     const adsBadge = document.getElementById("badge-ads-count");
     const catsBadge = document.getElementById("badge-categories-count");
     const rbacBadge = document.getElementById("badge-rbac-count");
+    const prodsBadge = document.getElementById("badge-products-count");
     if (reqBadge) reqBadge.textContent = (state.hrOps.requisitions || []).length;
     if (jobBadge) jobBadge.textContent = state.jobs.length;
     if (appBadge) appBadge.textContent = state.applications.length;
@@ -1896,6 +1903,9 @@ async function loadAllData() {
     }
     if (rbacBadge && Array.isArray(state.rbacRoles)) {
       rbacBadge.textContent = `${state.rbacRoles.length} Roles`;
+    }
+    if (prodsBadge && Array.isArray(state.products)) {
+      prodsBadge.textContent = `${state.products.length} Gói`;
     }
 
     applyStaticTranslations();
@@ -1917,6 +1927,7 @@ async function loadAllData() {
 
 function renderAllViews() {
   if (typeof syncEntHeaderLabels === "function") syncEntHeaderLabels();
+  if (typeof renderUniversalPageCrudBar === "function") renderUniversalPageCrudBar(state.activeTab);
   renderDashboardView();
   renderRequisitionsView();
   renderJobsView();
@@ -1927,6 +1938,7 @@ function renderAllViews() {
   renderStrategyView();
   if (typeof renderCareersView === "function") renderCareersView();
   if (typeof renderSaasView === "function") renderSaasView();
+  if (typeof renderProductsView === "function") renderProductsView();
   if (typeof renderUsersView === "function") renderUsersView();
   if (typeof renderRbacView === "function") renderRbacView();
   if (typeof renderAdsVipView === "function") renderAdsVipView();
@@ -2479,6 +2491,19 @@ function renderJobsView() {
             </div>
           </div>
 
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-bold mb-1">💰 Khung lương Đề xuất</label>
+              <input id="job-salary-input" type="text" required value="55 - 95 Triệu VNĐ ($2,200 - $3,800)"
+                class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold text-emerald-700 dark:text-emerald-400" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">⏱️ Kinh nghiệm tối thiểu (năm)</label>
+              <input id="job-exp-input" type="number" step="0.5" min="0" max="30" required value="5"
+                class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold" />
+            </div>
+          </div>
+
           <div class="flex items-center justify-between gap-2">
             <select id="job-lang-input" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-semibold">
               <option value="vi" ${state.lang === "vi" ? "selected" : ""}>[VI] Tiếng Việt</option>
@@ -2622,6 +2647,8 @@ async function submitCreateJob(e) {
   const title = document.getElementById("job-title-input").value;
   const department = document.getElementById("job-dept-input").value;
   const location = document.getElementById("job-loc-input").value;
+  const salary_range = document.getElementById("job-salary-input")?.value || "50 - 90 Triệu VNĐ";
+  const min_experience_years = parseFloat(document.getElementById("job-exp-input")?.value || "5");
   const language = document.getElementById("job-lang-input").value;
   const skills = document
     .getElementById("job-skills-input")
@@ -2634,11 +2661,11 @@ async function submitCreateJob(e) {
   await runWithAiProgressMessenger(
     {
       title: `🚀 Xuất bản Vị trí Tuyển dụng Mới (${targetOrgId})`,
-      action_source: "Omnichannel Job Publisher & SQLite Sync",
+      action_source: "Omnichannel Job Publisher & MySQL/SQLite Sync",
       entity_id: title,
       steps: [
         `Khởi tạo cấu trúc Rubric AI & Bộ câu hỏi phỏng vấn STAR cho "${title}"`,
-        `Lưu trữ vào bảng jobs trong SQLite (Tổ chức: ${targetOrgId})`,
+        `Lưu trữ vào bảng jobs trong MySQL (jobai_db) & SQLite (Tổ chức: ${targetOrgId})`,
         "Đồng bộ trực tiếp lên Cổng Tuyển dụng Public (/careers.html) & Danh mục Ngành nghề",
       ],
     },
@@ -2650,7 +2677,8 @@ async function submitCreateJob(e) {
           title,
           department,
           location,
-          salary_range: location,
+          salary_range,
+          min_experience_years,
           language,
           jd_text,
           must_have_skills: skills,
@@ -2661,7 +2689,7 @@ async function submitCreateJob(e) {
       return {
         severity: "success",
         summaryTitle: `✔ Đã xuất bản tin tuyển dụng: ${title}`,
-        summaryBody: `Đơn vị: ${targetOrgId} • Danh mục: ${department} • Đã hiển thị trên trang Public.`,
+        summaryBody: `Đơn vị: ${targetOrgId} • Mức lương: ${salary_range} • Đã hiển thị trên trang Public.`,
       };
     }
   );
@@ -7712,6 +7740,23 @@ function buildUserAccountFormHtml(existingUser) {
               </select>
             </div>
           </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div>
+              <label class="block font-bold mb-1">🔐 Mật khẩu Đăng nhập (PBKDF2-SHA256)</label>
+              <input id="usr-password" type="password" placeholder="${isEdit ? "Để trống nếu giữ nguyên mật khẩu" : "Nhập mật khẩu (Mặc định: 123456)"}"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 font-mono font-bold" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">🏢 Tên Doanh nghiệp / Đơn vị (Nếu B2B)</label>
+              <input id="usr-company-name" type="text" value="${u.company_name || ""}" placeholder="VD: TechVina Holdings"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 font-semibold" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">🔑 Mã Tenant (Org ID)</label>
+              <input id="usr-org-id" type="text" value="${u.org_id || ""}" placeholder="VD: TENANT-VN-01"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 font-mono" />
+            </div>
+          </div>
         </div>
 
         <!-- Section 2: Hồ sơ Sự nghiệp, Kỹ năng & Mức lương Kỳ vọng -->
@@ -7822,6 +7867,7 @@ function openViewUserModal(userId) {
           <div><b>Mã Tài khoản:</b> <span class="font-mono">${u.id}</span></div>
           <div><b>Phân loại:</b> ${isCand ? "🎓 Cá nhân / Ứng viên (B2C)" : "🏢 Quản trị viên Doanh nghiệp (B2B)"}</div>
           <div><b>Vai trò RBAC Động:</b> <span class="font-bold text-indigo-700 dark:text-indigo-300">🛡️ ${u.rbac_role_name || u.rbac_role_id || "—"}</span></div>
+          <div><b>Bảo mật Mật khẩu:</b> <span class="font-mono text-emerald-700 dark:text-emerald-400 font-bold">🔐 ${u.password_algorithm || "PBKDF2-HMAC-SHA256 (260k iter)"}</span></div>
           <div><b>Chức danh:</b> ${u.target_title || "—"}</div>
           <div><b>Lĩnh vực:</b> ${u.preferred_sector || "—"}</div>
           <div><b>Địa điểm:</b> ${u.location || "TP. Hồ Chí Minh"} (${u.country || "🇻🇳 Việt Nam"})</div>
@@ -7854,12 +7900,16 @@ async function submitUserAccountForm(e, userId) {
     .map((s) => s.trim())
     .filter(Boolean);
 
+  const rawPwd = (document.getElementById("usr-password")?.value || "").trim();
   const payload = {
     role: document.getElementById("usr-role")?.value || "candidate",
     rbac_role_id: document.getElementById("usr-rbac-role")?.value || "",
     full_name: document.getElementById("usr-full-name")?.value || "",
     email: document.getElementById("usr-email")?.value || "",
     phone: document.getElementById("usr-phone")?.value || "",
+    password: rawPwd || (userId ? "" : "123456"),
+    company_name: document.getElementById("usr-company-name")?.value || "",
+    org_id: document.getElementById("usr-org-id")?.value || "",
     country: document.getElementById("usr-country")?.value || "🇻🇳 Việt Nam",
     location: document.getElementById("usr-location")?.value || "TP. Hồ Chí Minh",
     target_title: document.getElementById("usr-target-title")?.value || "",
@@ -7892,8 +7942,8 @@ async function submitUserAccountForm(e, userId) {
   await loadAllData();
   showToast(
     userId
-      ? `✔ Đã cập nhật hồ sơ tài khoản ${userId} thành công!`
-      : `🎉 Đã khởi tạo tài khoản cá nhân / thành viên mới thành công!`
+      ? `✔ Đã cập nhật hồ sơ tài khoản ${userId} (Mật khẩu bảo mật PBKDF2-SHA256) thành công!`
+      : `🎉 Đã khởi tạo tài khoản thành viên mới (Mật khẩu đã mã hóa PBKDF2-HMAC-SHA256)!`
   );
 }
 
@@ -12302,4 +12352,1127 @@ window.addEventListener("DOMContentLoaded", () => {
     loadAllData();
   }
 });
+
+/* ============================================================================
+   MODULE: QUẢN LÝ SẢN PHẨM & GÓI DỊCH VỤ TUYỂN DỤNG AI (`view-products`)
+   + THANH CÔNG CỤ ĐỒNG NHẤT CRUD / IN ẤN A4 / XUẤT & NHẬP EXCEL CHO MỌI TRANG
+   ============================================================================ */
+
+function updateProductFilter(key, val) {
+  if (key === "q") state.productFilterQ = val;
+  if (key === "category") state.productFilterCat = val;
+  renderProductsView();
+}
+
+function renderProductsView() {
+  const container = document.getElementById("view-products");
+  if (!container) return;
+
+  const allProducts = Array.isArray(state.products) ? state.products : [];
+  const summary = state.productsData?.summary || {
+    total_products: allProducts.length,
+    active_products: allProducts.filter((p) => p.status === "active").length,
+    total_sold: allProducts.reduce((s, p) => s + (p.sold_count || 0), 0),
+    estimated_revenue_vnd: allProducts.reduce((s, p) => s + (p.price_vnd || 0) * (p.sold_count || 0), 0),
+    estimated_revenue_usd: allProducts.reduce((s, p) => s + (p.price_usd || 0) * (p.sold_count || 0), 0),
+  };
+
+  const q = (state.productFilterQ || "").toLowerCase().trim();
+  const catFilter = state.productFilterCat || "all";
+
+  const items = allProducts.filter((p) => {
+    const matchCat = catFilter === "all" || p.category === catFilter;
+    const matchQ =
+      !q ||
+      (p.name || "").toLowerCase().includes(q) ||
+      (p.sku || "").toLowerCase().includes(q) ||
+      (p.category || "").toLowerCase().includes(q) ||
+      (p.description || "").toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  container.innerHTML = `
+    <div class="rounded-3xl p-6 sm:p-7 bg-gradient-to-r from-rose-950 via-purple-950 to-slate-900 text-white shadow-xl border border-rose-800/40 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-white/15 text-rose-200 border border-white/15">
+          <span>📦 PRODUCT &amp; SERVICE CATALOG • MYSQL &amp; SQLITE SYNC</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">Quản lý Danh mục Sản phẩm &amp; Gói Dịch vụ Tuyển dụng AI</h2>
+        <p class="text-xs sm:text-sm text-rose-100/90 max-w-4xl leading-relaxed">
+          Quản trị đầy đủ các Gói thuê bao SaaS B2B, Gói đăng tin VIP Spotlight, Gói AI Screening Tokens, Dịch vụ Săn đầu người C-Level và Thẻ Thành viên VIP Fast-Track. Hỗ trợ đầy đủ CRUD, In bảng giá chuẩn ISO và Xuất/Nhập Excel.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+        <button onclick="openCreateProductModal()"
+          class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg flex items-center gap-1.5 transition">
+          <span>➕ Thêm Mới Sản Phẩm / Gói Dịch Vụ</span>
+        </button>
+        <button onclick="exportActivePageExcel('products')"
+          class="px-3.5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-extrabold text-xs flex items-center gap-1.5 transition">
+          <span>📥 Xuất Excel</span>
+        </button>
+        <button onclick="openUniversalBulkImportModal('products')"
+          class="px-3.5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-extrabold text-xs flex items-center gap-1.5 transition">
+          <span>📤 Nhập Excel</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="hr-card p-5 rounded-2xl border-t-4 border-t-rose-600">
+        <div class="text-xs text-slate-500 font-bold">Tổng Sản phẩm &amp; Gói Dịch vụ</div>
+        <div class="text-3xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">${summary.active_products} / ${summary.total_products}</div>
+        <div class="text-[11px] text-emerald-600 font-semibold mt-1">✔ Đang niêm yết trên Cổng B2B &amp; B2C</div>
+      </div>
+      <div class="hr-card p-5 rounded-2xl border-t-4 border-t-emerald-600">
+        <div class="text-xs text-slate-500 font-bold">Tổng Doanh thu Lũy kế (VNĐ)</div>
+        <div class="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400 mt-1">${Number(summary.estimated_revenue_vnd || 0).toLocaleString("vi-VN")} ₫</div>
+        <div class="text-[11px] text-slate-500 font-semibold mt-1">Quy đổi: $${Number(summary.estimated_revenue_usd || 0).toLocaleString("en-US")} USD</div>
+      </div>
+      <div class="hr-card p-5 rounded-2xl border-t-4 border-t-blue-600">
+        <div class="text-xs text-slate-500 font-bold">Tổng Số Gói Đã Kích Hoạt</div>
+        <div class="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mt-1">${summary.total_sold} <span class="text-xs font-normal">Đơn hàng</span></div>
+        <div class="text-[11px] text-slate-500 font-semibold mt-1">Tự động cấp hạn mức AI Tokens</div>
+      </div>
+      <div class="hr-card p-5 rounded-2xl border-t-4 border-t-amber-500">
+        <div class="text-xs text-slate-500 font-bold">Đồng bộ Cơ sở dữ liệu</div>
+        <div class="text-lg font-extrabold text-amber-700 dark:text-amber-400 mt-1">MySQL 9.7 (jobai_db)</div>
+        <div class="text-[11px] text-emerald-600 font-bold mt-1">✔ Bảng service_products hoạt động</div>
+      </div>
+    </div>
+
+    <div class="hr-card p-4 rounded-2xl flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+      <div class="relative flex-1">
+        <input type="text" value="${state.productFilterQ || ""}" oninput="updateProductFilter('q', this.value)"
+          placeholder="🔎 Tìm kiếm sản phẩm theo Tên gói dịch vụ, Mã SKU, Nhóm sản phẩm hoặc Mô tả..."
+          class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-semibold focus:outline-none focus:border-rose-600" />
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5">
+        <select onchange="updateProductFilter('category', this.value)"
+          class="px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-bold">
+          <option value="all" ${catFilter === "all" ? "selected" : ""}>📦 Tất cả Nhóm Sản phẩm (${allProducts.length})</option>
+          <option value="Gói Thuê bao SaaS B2B" ${catFilter === "Gói Thuê bao SaaS B2B" ? "selected" : ""}>🏢 Gói Thuê bao SaaS B2B</option>
+          <option value="Gói Đăng tin Tuyển dụng VIP" ${catFilter === "Gói Đăng tin Tuyển dụng VIP" ? "selected" : ""}>🔥 Gói Đăng tin Tuyển dụng VIP</option>
+          <option value="Gói Sàng lọc & Phỏng vấn AI" ${catFilter === "Gói Sàng lọc & Phỏng vấn AI" ? "selected" : ""}>🤖 Gói Sàng lọc &amp; Phỏng vấn AI</option>
+          <option value="Gói Săn đầu người Executive Search" ${catFilter === "Gói Săn đầu người Executive Search" ? "selected" : ""}>🎯 Gói Săn đầu người Executive Search</option>
+          <option value="Gói Tài khoản Ứng viên VIP" ${catFilter === "Gói Tài khoản Ứng viên VIP" ? "selected" : ""}>👑 Gói Tài khoản Ứng viên VIP</option>
+        </select>
+        <button onclick="openCreateProductModal()"
+          class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-sm transition">
+          ➕ Thêm Sản Phẩm Mới
+        </button>
+      </div>
+    </div>
+
+    <div class="hr-card rounded-2xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300">
+              <th class="p-3.5 font-extrabold">Mã / SKU</th>
+              <th class="p-3.5 font-extrabold">Tên Sản phẩm &amp; Gói Dịch vụ</th>
+              <th class="p-3.5 font-extrabold">Phân nhóm</th>
+              <th class="p-3.5 font-extrabold text-right">Đơn giá (VNĐ / USD)</th>
+              <th class="p-3.5 font-extrabold text-center">Hạn mức AI &amp; JD</th>
+              <th class="p-3.5 font-extrabold text-center">Đã bán</th>
+              <th class="p-3.5 font-extrabold text-center">Trạng thái</th>
+              <th class="p-3.5 font-extrabold text-right">Thao tác CRUD</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+            ${items
+              .map(
+                (p) => `
+              <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                <td class="p-3.5">
+                  <div class="font-mono font-extrabold text-rose-600 dark:text-rose-400">${p.id}</div>
+                  <div class="font-mono text-[10px] text-slate-500">${p.sku}</div>
+                </td>
+                <td class="p-3.5 max-w-md">
+                  <div class="font-extrabold text-sm text-slate-900 dark:text-white">${p.name}</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">${p.description || ""}</div>
+                  <div class="flex flex-wrap gap-1 mt-1.5">
+                    ${(p.features || [])
+                      .map(
+                        (f) =>
+                          `<span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-300 text-[10px] font-semibold">✔ ${f}</span>`
+                      )
+                      .join("")}
+                  </div>
+                </td>
+                <td class="p-3.5">
+                  <span class="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-[11px]">
+                    ${p.category}
+                  </span>
+                  <div class="text-[10px] text-slate-400 mt-1">Chu kỳ: ${p.billing_cycle}</div>
+                </td>
+                <td class="p-3.5 text-right">
+                  <div class="font-extrabold text-sm text-emerald-700 dark:text-emerald-400">${Number(p.price_vnd || 0).toLocaleString("vi-VN")} ₫</div>
+                  <div class="font-mono text-[11px] text-slate-500">$${Number(p.price_usd || 0).toLocaleString("en-US")} USD</div>
+                </td>
+                <td class="p-3.5 text-center">
+                  <div class="font-mono font-extrabold text-blue-700 dark:text-blue-300">${Number(p.ai_quota_tokens || 0).toLocaleString("vi-VN")} Tokens</div>
+                  <div class="text-[10px] text-slate-500">${p.job_slots || 0} Tin JD • ${p.vip_badge}</div>
+                </td>
+                <td class="p-3.5 text-center">
+                  <span class="px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-extrabold">
+                    ${p.sold_count || 0} đơn
+                  </span>
+                </td>
+                <td class="p-3.5 text-center">
+                  <button onclick="toggleProductStatus('${p.id}')"
+                    class="px-2.5 py-1 rounded-full text-[11px] font-extrabold transition ${
+                      p.status === "active"
+                        ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                        : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                    }">
+                    ${p.status === "active" ? "● Đang kinh doanh" : "○ Tạm ngưng"}
+                  </button>
+                </td>
+                <td class="p-3.5 text-right">
+                  <div class="inline-flex items-center gap-1.5">
+                    <button onclick="openEditProductModal('${p.id}')"
+                      class="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px]">
+                      ✏️ Sửa
+                    </button>
+                    <button onclick="deleteProductItem('${p.id}')"
+                      class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px]">
+                      🗑️ Xóa
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function buildProductFormModalHtml(existing) {
+  const isEdit = Boolean(existing);
+  const p = existing || {
+    sku: "HM-AI-PACKAGE",
+    name: "",
+    category: "Gói Thuê bao SaaS B2B",
+    price_vnd: 15000000,
+    price_usd: 600,
+    billing_cycle: "Theo tháng",
+    ai_quota_tokens: 150000,
+    job_slots: 25,
+    vip_badge: "PLATINUM_PRO",
+    features: ["Sàng lọc CV bằng AI đa ngôn ngữ", "Phỏng vấn tự động STAR", "Báo cáo chuẩn ISO 9001"],
+    description: "",
+    status: "active",
+    sold_count: 1,
+  };
+
+  return `
+    <div class="space-y-4 text-xs">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-rose-100 text-rose-800">
+            ${isEdit ? `CHỈNH SỬA SẢN PHẨM • ${p.id}` : "THÊM MỚI SẢN PHẨM & GÓI DỊCH VỤ"}
+          </span>
+          <h3 class="text-base sm:text-lg font-extrabold mt-1">
+            ${isEdit ? `Cập nhật: ${p.name}` : "Khởi tạo Sản phẩm / Gói Dịch vụ Tuyển dụng AI Mới"}
+          </h3>
+        </div>
+        <button onclick="closeCrudModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold">✕ Đóng</button>
+      </div>
+
+      <form onsubmit="submitProductForm(event, '${isEdit ? p.id : ""}')" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div class="sm:col-span-2">
+            <label class="block font-bold mb-1">Tên Sản phẩm / Gói Dịch vụ *</label>
+            <input id="prd-name" type="text" required value="${p.name || ""}" placeholder="VD: Gói Tuyển dụng AI Enterprise Plus"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Mã Định danh SKU *</label>
+            <input id="prd-sku" type="text" required value="${p.sku || "HM-PRO-2026"}"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono font-bold uppercase" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div>
+            <label class="block font-bold mb-1">Phân nhóm Sản phẩm</label>
+            <select id="prd-category" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold">
+              <option value="Gói Thuê bao SaaS B2B" ${p.category === "Gói Thuê bao SaaS B2B" ? "selected" : ""}>🏢 Gói Thuê bao SaaS B2B</option>
+              <option value="Gói Đăng tin Tuyển dụng VIP" ${p.category === "Gói Đăng tin Tuyển dụng VIP" ? "selected" : ""}>🔥 Gói Đăng tin Tuyển dụng VIP</option>
+              <option value="Gói Sàng lọc & Phỏng vấn AI" ${p.category === "Gói Sàng lọc & Phỏng vấn AI" ? "selected" : ""}>🤖 Gói Sàng lọc &amp; Phỏng vấn AI</option>
+              <option value="Gói Săn đầu người Executive Search" ${p.category === "Gói Săn đầu người Executive Search" ? "selected" : ""}>🎯 Gói Săn đầu người Executive Search</option>
+              <option value="Gói Tài khoản Ứng viên VIP" ${p.category === "Gói Tài khoản Ứng viên VIP" ? "selected" : ""}>👑 Gói Tài khoản Ứng viên VIP</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Đơn giá Niêm yết (VNĐ) *</label>
+            <input id="prd-price-vnd" type="number" step="100000" min="0" required value="${p.price_vnd ?? 15000000}"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-extrabold text-emerald-700 dark:text-emerald-400" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Đơn giá Quốc tế (USD) *</label>
+            <input id="prd-price-usd" type="number" step="1" min="0" required value="${p.price_usd ?? 600}"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono font-bold" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
+          <div>
+            <label class="block font-bold mb-1">Chu kỳ Thanh toán</label>
+            <select id="prd-cycle" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold">
+              <option value="Theo tháng" ${p.billing_cycle === "Theo tháng" ? "selected" : ""}>Theo tháng</option>
+              <option value="Theo năm" ${p.billing_cycle === "Theo năm" ? "selected" : ""}>Theo năm</option>
+              <option value="Theo chiến dịch (30 ngày)" ${p.billing_cycle === "Theo chiến dịch (30 ngày)" ? "selected" : ""}>Theo chiến dịch (30 ngày)</option>
+              <option value="Trọn gói theo lượt" ${p.billing_cycle === "Trọn gói theo lượt" ? "selected" : ""}>Trọn gói theo lượt</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Hạn mức AI Tokens</label>
+            <input id="prd-tokens" type="number" step="5000" min="0" required value="${p.ai_quota_tokens ?? 150000}"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Số lượng Tin JD Mở</label>
+            <input id="prd-jobs" type="number" min="0" required value="${p.job_slots ?? 25}"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Số đơn hàng đã bán</label>
+            <input id="prd-sold" type="number" min="0" required value="${p.sold_count ?? 1}"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Danh sách Quyền lợi &amp; Tính năng (Phân cách bằng dấu phẩy)</label>
+          <input id="prd-features" type="text" required value="${(p.features || []).join(", ")}"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-semibold" />
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Mô tả Chi tiết Sản phẩm / Gói dịch vụ</label>
+          <textarea id="prd-desc" rows="3"
+            class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">${p.description || ""}</textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button type="button" onclick="closeCrudModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold">Hủy</button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold shadow-lg">
+            💾 ${isEdit ? "Lưu Cập nhật Sản phẩm" : "Tạo Sản phẩm Mới"}
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+}
+
+function openCreateProductModal() {
+  openCrudModal(buildProductFormModalHtml(null), () => openCreateProductModal());
+}
+
+function openEditProductModal(productId) {
+  const existing = (state.products || []).find((x) => x.id === productId);
+  if (!existing) return;
+  openCrudModal(buildProductFormModalHtml(existing), () => openEditProductModal(productId));
+}
+
+async function submitProductForm(e, productId) {
+  e.preventDefault();
+  const features = (document.getElementById("prd-features")?.value || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const payload = {
+    sku: document.getElementById("prd-sku")?.value || "HM-SKU",
+    name: document.getElementById("prd-name")?.value || "",
+    category: document.getElementById("prd-category")?.value || "Gói Thuê bao SaaS B2B",
+    price_vnd: parseFloat(document.getElementById("prd-price-vnd")?.value || "15000000"),
+    price_usd: parseFloat(document.getElementById("prd-price-usd")?.value || "600"),
+    billing_cycle: document.getElementById("prd-cycle")?.value || "Theo tháng",
+    ai_quota_tokens: parseInt(document.getElementById("prd-tokens")?.value || "100000", 10),
+    job_slots: parseInt(document.getElementById("prd-jobs")?.value || "20", 10),
+    vip_badge: "PLATINUM_PRO",
+    features,
+    description: document.getElementById("prd-desc")?.value || "",
+    status: "active",
+    sold_count: parseInt(document.getElementById("prd-sold")?.value || "1", 10),
+  };
+
+  const url = productId
+    ? `${API_BASE}/api/products/${encodeURIComponent(productId)}`
+    : `${API_BASE}/api/products`;
+  const method = productId ? "PUT" : "POST";
+
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    showToast(`⚠️ ${err.detail || "Không thể lưu sản phẩm"}`, "error");
+    return;
+  }
+  closeCrudModal();
+  await loadAllData();
+  showToast(
+    productId
+      ? `✔ Đã cập nhật sản phẩm ${productId} thành công!`
+      : `🎉 Đã thêm mới sản phẩm "${payload.name}" vào hệ thống MySQL & SQLite!`
+  );
+}
+
+async function toggleProductStatus(productId) {
+  await fetch(`${API_BASE}/api/products/${encodeURIComponent(productId)}/status`, {
+    method: "PATCH",
+  });
+  await loadAllData();
+  showToast(`🔄 Đã cập nhật trạng thái kinh doanh cho sản phẩm ${productId}`);
+}
+
+async function deleteProductItem(productId) {
+  await fetch(`${API_BASE}/api/products/${encodeURIComponent(productId)}`, {
+    method: "DELETE",
+  });
+  await loadAllData();
+  showToast(`🗑️ Đã xóa sản phẩm ${productId} khỏi danh mục`);
+}
+
+/* Modal Creators for Jobs & Requisitions so every page has a 1-click Modal Create button */
+function openCreateJobModal() {
+  const targetOrgId = state.activeOrgId && state.activeOrgId !== "ALL" ? state.activeOrgId : "TENANT-VN-01";
+  openCrudModal(`
+    <div class="space-y-4 text-xs">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-blue-100 text-blue-800">TẠO TIN TUYỂN DỤNG MỚI • ${targetOrgId}</span>
+          <h3 class="text-base sm:text-lg font-extrabold mt-1">Đăng Tin Tuyển Dụng &amp; Khởi Tạo Rubric AI Mới</h3>
+        </div>
+        <button onclick="closeCrudModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold">✕ Đóng</button>
+      </div>
+      <form onsubmit="submitModalCreateJob(event)" class="space-y-3.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block font-bold mb-1">Chức danh Vị trí Tuyển dụng *</label>
+            <input id="modal-job-title" type="text" required value="[Quản lý Cao cấp] Giám đốc Khối Công nghệ & AI (CTO / Head of AI)"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Lĩnh vực / Phòng ban *</label>
+            <input id="modal-job-dept" type="text" required value="Công nghệ Thông tin, AI & Chuyển đổi số"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-semibold" />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div>
+            <label class="block font-bold mb-1">Địa điểm Làm việc *</label>
+            <input id="modal-job-loc" type="text" required value="TP. Hồ Chí Minh / Hà Nội"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Khung lương Đề xuất *</label>
+            <input id="modal-job-sal" type="text" required value="65 - 110 Triệu VNĐ ($2,600 - $4,400)"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold text-emerald-700" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Kinh nghiệm tối thiểu (năm)</label>
+            <input id="modal-job-exp" type="number" step="0.5" min="0" required value="5"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold" />
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Kỹ năng Bắt buộc (Must-Have Skills, phân cách bằng dấu phẩy) *</label>
+          <input id="modal-job-skills" type="text" required value="Python, FastAPI, Cloud Architecture, Team Leadership, OKRs"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Mô tả Công việc Chi tiết (JD) *</label>
+          <textarea id="modal-job-jd" rows="4" required
+            class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-[11px]">Chủ trì kiến trúc nền tảng AI & Cloud quy mô doanh nghiệp, dẫn dắt đội ngũ kỹ sư đa quốc gia và tối ưu hóa SLA hệ thống đạt 99.99%.</textarea>
+        </div>
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button type="button" onclick="closeCrudModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold">Hủy</button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold shadow-lg">🚀 Xuất bản Tin Tuyển Dụng</button>
+        </div>
+      </form>
+    </div>
+  `, () => openCreateJobModal());
+}
+
+async function submitModalCreateJob(e) {
+  e.preventDefault();
+  const targetOrgId = state.activeOrgId && state.activeOrgId !== "ALL" ? state.activeOrgId : "TENANT-VN-01";
+  const payload = {
+    title: document.getElementById("modal-job-title").value.trim(),
+    department: document.getElementById("modal-job-dept").value.trim(),
+    location: document.getElementById("modal-job-loc").value.trim(),
+    salary_range: document.getElementById("modal-job-sal").value.trim(),
+    min_experience_years: parseFloat(document.getElementById("modal-job-exp").value || "5"),
+    language: state.lang || "vi",
+    must_have_skills: document.getElementById("modal-job-skills").value.split(",").map((s) => s.trim()).filter(Boolean),
+    jd_text: document.getElementById("modal-job-jd").value.trim(),
+    org_id: targetOrgId,
+  };
+  const res = await fetch(`${API_BASE}/api/jobs`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (res.ok) {
+    closeCrudModal();
+    await loadAllData();
+    showToast(`🎉 Đã tạo tin tuyển dụng mới "${payload.title}" thành công!`);
+  }
+}
+
+/* ============================================================================
+   UNIVERSAL PAGE COMMAND BAR (CRUD + IN ẤN A4 + XUẤT/NHẬP EXCEL CHO TẤT CẢ 16 TRANG)
+   ============================================================================ */
+const PAGE_CRUD_CONFIG = {
+  dashboard: {
+    title: "Bảng Điều Khiển Chiến Lược & SLA Tuyển Dụng",
+    createLabel: "➕ Tạo Tin Tuyển Dụng Mới",
+    createAction: "openCreateJobModal()",
+    importMod: "jobs",
+  },
+  requisitions: {
+    title: "Quản Lý Định Biên Nhân Sự & Phê Duyệt HC",
+    createLabel: "➕ Tạo Phiếu Định Biên Mới",
+    createAction: "document.getElementById('req-title')?.focus()",
+    importMod: "requisitions",
+  },
+  jobs: {
+    title: "Quản Trị Tin Tuyển Dụng & AI JD Studio",
+    createLabel: "➕ Tạo Tin Tuyển Dụng Mới",
+    createAction: "openCreateJobModal()",
+    importMod: "jobs",
+  },
+  pipeline: {
+    title: "Bảng Kanban ATS 5 Vòng & Sàng Lọc CV AI",
+    createLabel: "➕ Nộp / Nhập Hồ Sơ Ứng Viên Mới",
+    createAction: "openUniversalBulkImportModal('candidates')",
+    importMod: "candidates",
+  },
+  interview: {
+    title: "Phòng Phỏng Vấn Giọng Nói AI Đa Ngôn Ngữ (STAR)",
+    createLabel: "🤖 AI Chọn Ứng Viên Tối Ưu",
+    createAction: "runAiSelectBestForJob()",
+    importMod: "candidates",
+  },
+  assessment: {
+    title: "Trung Tâm Đánh Giá Kỹ Năng Code & Ngoại Ngữ Sandbox",
+    createLabel: "💻 Chấm Điểm AI Sandbox",
+    createAction: "runSandboxEvaluation()",
+    importMod: "candidates",
+  },
+  compare: {
+    title: "Ma Trận Đối Sánh Ứng Viên & Kiểm Toán Độ Công Bằng",
+    createLabel: "🖨️ In Bảng Đối Sánh ISO-HR-02",
+    createAction: "printStandardEnterpriseForm('ISO-HR-02', state.compareJobId || state.jobs[0]?.id)",
+    importMod: "candidates",
+  },
+  offers: {
+    title: "Quản Trị Thư Mời Nhận Việc (Offer) & Lương Gross-to-Net",
+    createLabel: "➕ Tạo Thư Mời Offer Mới",
+    createAction: "openCreateOfferModal()",
+    importMod: "offers",
+  },
+  strategy: {
+    title: "Cấu Hình Cổng AI Gateway (motapis.com/v1) & Bảo Mật",
+    createLabel: "🔌 Kiểm Tra Kết Nối AI Gateway",
+    createAction: "testLiveAiGateway()",
+    importMod: "products",
+  },
+  careers: {
+    title: "Cổng Tuyển Dụng Việc Làm Public (/careers.html)",
+    createLabel: "➕ Tạo Tin Tuyển Dụng Mới",
+    createAction: "openCreateJobModal()",
+    importMod: "jobs",
+  },
+  saas: {
+    title: "Quản Trị Doanh Nghiệp Thuê Bao Đa Quốc Gia (B2B Tenants)",
+    createLabel: "➕ Thêm Doanh Nghiệp Thuê Bao",
+    createAction: "openCreateTenantModal()",
+    importMod: "tenants",
+  },
+  products: {
+    title: "Quản Lý Danh Mục Sản Phẩm & Gói Dịch Vụ Tuyển Dụng AI",
+    createLabel: "➕ Thêm Mới Sản Phẩm / Gói Dịch Vụ",
+    createAction: "openCreateProductModal()",
+    importMod: "products",
+  },
+  users: {
+    title: "Quản Trị Thành Viên & Tài Khoản Cá Nhân (Mã Hóa PBKDF2-SHA256)",
+    createLabel: "➕ Thêm Mới Thành Viên",
+    createAction: "openCreateUserModal()",
+    importMod: "users",
+  },
+  rbac: {
+    title: "Ma Trận Phân Quyền Vai Trò Động (Dynamic RBAC)",
+    createLabel: "➕ Tạo Vai Trò RBAC Mới",
+    createAction: "openCreateRbacRoleModal()",
+    importMod: "users",
+  },
+  ads: {
+    title: "Quản Trị Chiến Dịch Quảng Cáo & Banner VIP",
+    createLabel: "➕ Tạo Chiến Dịch Quảng Cáo Mới",
+    createAction: "document.getElementById('ad-title')?.focus()",
+    importMod: "ads",
+  },
+  categories: {
+    title: "Quản Trị Danh Mục Ngành Nghề, Địa Điểm & Trọng Số AI",
+    createLabel: "➕ Thêm Danh Mục Ngành Nghề Mới",
+    createAction: "openCategoryModal()",
+    importMod: "categories",
+  },
+};
+
+function renderUniversalPageCrudBar(tabName) {
+  const bar = document.getElementById("universal-page-crud-bar");
+  if (!bar) return;
+  const activeTab = tabName || state.activeTab || "dashboard";
+  const cfg = PAGE_CRUD_CONFIG[activeTab] || PAGE_CRUD_CONFIG.dashboard;
+
+  bar.innerHTML = `
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-9 h-9 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 flex items-center justify-center font-extrabold text-sm shrink-0">
+        ⚡
+      </div>
+      <div class="min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            TRANG: ${activeTab.toUpperCase()}
+          </span>
+          <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+            ● CRUD + In A4 + Xuất/Nhập Excel Sẵn Sàng
+          </span>
+        </div>
+        <div class="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
+          ${cfg.title}
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <button type="button" onclick="${cfg.createAction}"
+        class="h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold shadow-sm flex items-center gap-1.5 transition">
+        <span>${cfg.createLabel}</span>
+      </button>
+      <button type="button" onclick="printActivePageReport('${activeTab}')"
+        class="h-9 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/70 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 text-xs font-extrabold flex items-center gap-1.5 transition">
+        <span>🖨️ In Trang A4</span>
+      </button>
+      <button type="button" onclick="exportActivePageExcel('${activeTab}')"
+        class="h-9 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/70 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800 text-xs font-extrabold flex items-center gap-1.5 transition">
+        <span>📥 Xuất Excel (.xls)</span>
+      </button>
+      <button type="button" onclick="openUniversalBulkImportModal('${cfg.importMod}')"
+        class="h-9 px-3 rounded-xl bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/70 dark:hover:bg-cyan-900 text-cyan-800 dark:text-cyan-200 border border-cyan-200 dark:border-cyan-800 text-xs font-extrabold flex items-center gap-1.5 transition">
+        <span>📤 Nhập Excel / CSV</span>
+      </button>
+      <button type="button" onclick="exportMultiSheetExcel()" title="Xuất toàn bộ hệ thống ra 10 Sheet Excel"
+        class="h-9 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/70 dark:hover:bg-indigo-900 text-indigo-800 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 text-xs font-extrabold flex items-center gap-1.5 transition">
+        <span>📊 Xuất Full 10 Sheet</span>
+      </button>
+    </div>
+  `;
+}
+
+function getModuleDatasetForExportAndPrint(tabName) {
+  const mod = tabName || state.activeTab || "dashboard";
+  if (mod === "jobs" || mod === "careers") {
+    return {
+      title: "DANH SÁCH VỊ TRÍ TUYỂN DỤNG (JOBS)",
+      headers: ["Mã JD", "Tổ chức", "Chức danh Tuyển dụng", "Lĩnh vực / Phòng ban", "Địa điểm", "Mức lương", "Kinh nghiệm (Năm)", "Số CV"],
+      rows: (state.jobs || []).map((j) => [j.id, j.org_id || "TENANT-VN-01", j.title, j.department, j.location, j.salary_range, j.min_experience_years, j.applicant_count]),
+    };
+  }
+  if (mod === "requisitions") {
+    return {
+      title: "DANH SÁCH PHIẾU YÊU CẦU ĐỊNH BIÊN NHÂN SỰ (REQUISITIONS)",
+      headers: ["Mã Phiếu", "Chức danh Định biên", "Phòng ban", "Người đề xuất", "Định biên HC", "Đã tuyển", "Ngân sách Lương", "Trạng thái"],
+      rows: (state.hrOps?.requisitions || []).map((r) => [r.id, r.title, r.department, r.requester, r.headcount, r.filled, r.budget_band, r.status]),
+    };
+  }
+  if (mod === "pipeline" || mod === "interview" || mod === "assessment" || mod === "compare") {
+    return {
+      title: "DANH SÁCH HỒ SƠ ỨNG VIÊN & ĐIỂM ĐÁNH GIÁ AI (CANDIDATES)",
+      headers: ["Mã Hồ sơ", "Họ và Tên Ứng viên", "Email", "Số điện thoại", "Vị trí Ứng tuyển", "Vòng Hiện tại", "Điểm Kỹ năng", "Điểm Ngữ nghĩa", "Tổng Điểm AI"],
+      rows: (state.applications || []).map((a) => [
+        a.id,
+        a.full_name,
+        a.email,
+        a.phone,
+        a.job_title,
+        a.stage,
+        a.screening?.must_have_score || 0,
+        a.screening?.semantic_score || 0,
+        a.effective_score || 0,
+      ]),
+    };
+  }
+  if (mod === "offers") {
+    return {
+      title: "DANH SÁCH THƯ MỜI NHẬN VIỆC & ĐÃI NGỘ (OFFERS)",
+      headers: ["Mã Offer", "Họ tên Ứng viên", "Chức danh Bổ nhiệm", "Lương Gross (VNĐ)", "Trung vị Thị trường", "Compa-Ratio (%)", "Ngày nhận việc", "Phúc lợi & Thưởng"],
+      rows: (state.hrOps?.offers || []).map((o) => [
+        o.id,
+        o.candidate_name,
+        o.job_title,
+        o.base_salary_vnd,
+        o.market_median_vnd,
+        o.ai_compa_ratio,
+        o.start_date,
+        o.bonus_structure,
+      ]),
+    };
+  }
+  if (mod === "saas") {
+    return {
+      title: "DANH SÁCH DOANH NGHIỆP THUÊ BAO B2B (SAAS TENANTS)",
+      headers: ["Mã Tenant", "Tên Tập đoàn / Doanh nghiệp", "Quốc gia", "Ngành nghề", "Gói cước", "MRR ($)", "Hạn mức AI Tokens", "CHRO Quản trị", "Email"],
+      rows: (state.saasData?.tenants || []).map((t) => [
+        t.id,
+        t.company_name,
+        t.country,
+        t.industry,
+        t.plan,
+        t.mrr_usd,
+        t.ai_quota_limit,
+        t.admin_name,
+        t.admin_email,
+      ]),
+    };
+  }
+  if (mod === "products" || mod === "strategy") {
+    return {
+      title: "DANH MỤC SẢN PHẨM & GÓI DỊCH VỤ TUYỂN DỤNG AI (PRODUCTS)",
+      headers: ["Mã SP", "Mã SKU", "Tên Sản phẩm / Gói Dịch vụ", "Phân nhóm", "Giá VNĐ", "Giá USD", "Chu kỳ", "AI Tokens", "Đã bán", "Trạng thái"],
+      rows: (state.products || []).map((p) => [
+        p.id,
+        p.sku,
+        p.name,
+        p.category,
+        p.price_vnd,
+        p.price_usd,
+        p.billing_cycle,
+        p.ai_quota_tokens,
+        p.sold_count,
+        p.status,
+      ]),
+    };
+  }
+  if (mod === "users") {
+    return {
+      title: "DANH SÁCH THÀNH VIÊN & TÀI KHOẢN HỆ THỐNG (USERS)",
+      headers: ["Mã TK", "Họ và Tên", "Email Đăng nhập", "Số điện thoại", "Loại TK", "Vai trò RBAC", "Chức danh", "Khu vực", "Chuẩn Mã hóa Mật khẩu"],
+      rows: (state.usersData?.users || []).map((u) => [
+        u.id,
+        u.full_name,
+        u.email,
+        u.phone,
+        u.role,
+        u.rbac_role_name || u.rbac_role_id,
+        u.target_title,
+        u.location,
+        u.password_algorithm || "PBKDF2-HMAC-SHA256",
+      ]),
+    };
+  }
+  if (mod === "rbac") {
+    return {
+      title: "MA TRẬN PHÂN QUYỀN VAI TRÒ ĐỘNG (DYNAMIC RBAC ROLES)",
+      headers: ["Mã Vai trò", "Code", "Tên Vai trò", "Phạm vi Dữ liệu", "Số Tab Cho phép", "Tạo mới", "Sửa", "Xóa", "Phê duyệt", "AI Eval"],
+      rows: (state.rbacRoles || []).map((r) => [
+        r.id,
+        r.code,
+        r.name,
+        r.data_scope,
+        (r.allowed_tabs || []).length,
+        r.permissions?.can_create ? "Có" : "Không",
+        r.permissions?.can_edit ? "Có" : "Không",
+        r.permissions?.can_delete ? "Có" : "Không",
+        r.permissions?.can_approve ? "Có" : "Không",
+        r.permissions?.can_ai_evaluate ? "Có" : "Không",
+      ]),
+    };
+  }
+  if (mod === "ads") {
+    return {
+      title: "DANH SÁCH CHIẾN DỊCH QUẢNG CÁO & BANNER VIP (AD BANNERS)",
+      headers: ["Mã Banner", "Tiêu đề Chiến dịch", "Doanh nghiệp", "Vị trí Hiển thị", "Hạng VIP", "Lượt hiển thị", "Lượt Click", "Trạng thái"],
+      rows: (state.adBannersData?.items || []).map((b) => [
+        b.id,
+        b.title,
+        b.company_name,
+        b.placement,
+        b.vip_tier,
+        b.impressions,
+        b.clicks,
+        b.active ? "Đang bật" : "Tạm dừng",
+      ]),
+    };
+  }
+  if (mod === "categories") {
+    return {
+      title: "DANH MỤC NGÀNH NGHỀ & TRỌNG SỐ AI (MASTER CATEGORIES)",
+      headers: ["Mã Danh mục", "Code", "Tên Ngành nghề (VI)", "Tên Quốc tế (EN)", "Khối ngành", "Khung lương tham chiếu", "Số JD", "Trạng thái"],
+      rows: (state.categories || []).map((c) => [
+        c.id,
+        c.code,
+        c.name_vi,
+        c.name_en,
+        c.group_name,
+        c.salary_benchmark,
+        c.job_count || 0,
+        c.status,
+      ]),
+    };
+  }
+  return {
+    title: "BÁO CÁO TỔNG QUAN HỆ THỐNG TUYỂN DỤNG HIREMIND AI",
+    headers: ["Hạng mục Quản trị", "Số lượng Bản ghi", "Trạng thái Đồng bộ", "Cơ sở dữ liệu"],
+    rows: [
+      ["Vị trí Tuyển dụng (Jobs)", (state.jobs || []).length, "Hoạt động", "MySQL jobai_db + SQLite"],
+      ["Hồ sơ Ứng viên (Applications)", (state.applications || []).length, "Hoạt động", "MySQL jobai_db + SQLite"],
+      ["Phiếu Định biên (Requisitions)", (state.hrOps?.requisitions || []).length, "Hoạt động", "MySQL jobai_db + SQLite"],
+      ["Thư mời Nhận việc (Offers)", (state.hrOps?.offers || []).length, "Hoạt động", "MySQL jobai_db + SQLite"],
+      ["Doanh nghiệp Thuê bao (Tenants)", (state.saasData?.tenants || []).length, "Hoạt động", "MySQL jobai_db + SQLite"],
+      ["Sản phẩm & Gói Dịch vụ (Products)", (state.products || []).length, "Hoạt động", "MySQL jobai_db + SQLite"],
+      ["Tài khoản Thành viên (Users)", (state.usersData?.users || []).length, "Mã hóa PBKDF2-SHA256", "MySQL jobai_db + SQLite"],
+      ["Vai trò Phân quyền Động (RBAC)", (state.rbacRoles || []).length, "Hoạt động", "MySQL jobai_db + SQLite"],
+      ["Chiến dịch Quảng cáo VIP (Ads)", (state.adBannersData?.items || []).length, "Hoạt động", "MySQL jobai_db + SQLite"],
+      ["Danh mục Ngành nghề (Categories)", (state.categories || []).length, "Hoạt động", "MySQL jobai_db + SQLite"],
+    ],
+  };
+}
+
+function printActivePageReport(tabName) {
+  const mod = tabName || state.activeTab || "dashboard";
+  const ds = getModuleDatasetForExportAndPrint(mod);
+  const nowStr = new Date().toLocaleString("vi-VN");
+  const printWin = window.open("", "_blank", "width=1020,height=840");
+  if (!printWin) return;
+
+  const thHtml = ds.headers.map((h) => `<th>${h}</th>`).join("");
+  const trHtml = ds.rows
+    .map(
+      (r, idx) =>
+        `<tr><td style="text-align:center;font-weight:700;">${idx + 1}</td>${r
+          .map((c) => `<td>${c ?? ""}</td>`)
+          .join("")}</tr>`
+    )
+    .join("");
+
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Báo cáo In A4 — ${ds.title}</title>
+  <style>
+    @page { size: A4 landscape; margin: 14mm; }
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #0f172a; margin: 16px; font-size: 12px; }
+    .hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1d4ed8; padding-bottom: 12px; margin-bottom: 16px; }
+    .brand { font-size: 18px; font-weight: 800; color: #1d4ed8; }
+    h1 { font-size: 15px; margin: 4px 0; text-transform: uppercase; color: #0f172a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11.5px; }
+    th { background: #1e40af; color: #fff; padding: 7px 8px; border: 1px solid #cbd5e1; text-align: left; }
+    td { padding: 6px 8px; border: 1px solid #cbd5e1; vertical-align: top; }
+    tr:nth-child(even) { background: #f8fafc; }
+    .sign { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 36px; text-align: center; font-weight: 700; }
+    .sign div { padding-top: 56px; border-top: 1px dashed #64748b; }
+  </style>
+</head>
+<body>
+  <div class="hdr">
+    <div>
+      <div class="brand">HIREMIND ENTERPRISE AI ATS — TECHCORP VIETNAM</div>
+      <h1>${ds.title}</h1>
+      <div>Chuẩn ISO 9001:2015 &amp; Nghị định 13/2023/NĐ-CP • Tổng số bản ghi: <b>${ds.rows.length}</b></div>
+    </div>
+    <div style="text-align:right">
+      <div><b>Mã báo cáo:</b> ISO-RPT-${mod.toUpperCase()}</div>
+      <div><b>Thời gian kết xuất:</b> ${nowStr}</div>
+      <div><b>CSDL:</b> MySQL 9.7 (jobai_db)</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th style="width:42px;text-align:center;">STT</th>${thHtml}</tr></thead>
+    <tbody>${trHtml}</tbody>
+  </table>
+  <div class="sign">
+    <div>NGƯỜI LẬP BIỂU<br/><small>(Ký &amp; ghi rõ họ tên)</small></div>
+    <div>TRƯỞNG KHỐI CHUYÊN MÔN<br/><small>(Kiểm duyệt dữ liệu)</small></div>
+    <div>GIÁM ĐỐC NHÂN SỰ / BAN TỔNG GIÁM ĐỐC<br/><small>(Ký duyệt &amp; đóng dấu)</small></div>
+  </div>
+  <script>window.onload = function() { setTimeout(function() { window.print(); }, 350); };</script>
+</body>
+</html>`);
+  printWin.document.close();
+}
+
+function exportActivePageExcel(tabName) {
+  const mod = tabName || state.activeTab || "dashboard";
+  const ds = getModuleDatasetForExportAndPrint(mod);
+  const xmlEsc = (v) =>
+    String(v ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  const headerCells = ds.headers
+    .map((h) => `<Cell ss:StyleID="sHeader"><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`)
+    .join("");
+  const dataRows = ds.rows
+    .map(
+      (r) =>
+        `<Row>${r
+          .map((cell) => {
+            const isNum = typeof cell === "number" && !Number.isNaN(cell);
+            return `<Cell ss:StyleID="sCell"><Data ss:Type="${isNum ? "Number" : "String"}">${xmlEsc(cell)}</Data></Cell>`;
+          })
+          .join("")}</Row>`
+    )
+    .join("\n");
+
+  const workbookXml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="sHeader">
+   <Font ss:FontName="Segoe UI" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#1D4ED8" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sCell">
+   <Font ss:FontName="Segoe UI" ss:Size="10.5" ss:Color="#0F172A"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="${xmlEsc(mod.toUpperCase().slice(0, 28))}">
+  <Table>
+   <Row ss:Height="24">${headerCells}</Row>
+   ${dataRows}
+  </Table>
+ </Worksheet>
+</Workbook>`;
+
+  const blob = new Blob(["\uFEFF" + workbookXml], { type: "application/vnd.ms-excel;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `HireMind_${mod.toUpperCase()}_${new Date().toISOString().slice(0, 10)}.xls`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`📥 Đã xuất file Excel (.xls) cho trang ${mod.toUpperCase()} (${ds.rows.length} dòng)!`);
+}
+
+const UNIVERSAL_IMPORT_TEMPLATES = {
+  jobs: {
+    label: "Tin Tuyển Dụng (Jobs)",
+    columnsDesc: "Chức danh | Phòng ban / Ngành | Địa điểm | Mức lương | Số năm KN | Kỹ năng (ngăn cách bằng ;)",
+    sampleText: `Giám đốc Sản phẩm AI (AI Product Director) | Công nghệ Thông tin, AI & Chuyển đổi số | TP. Hồ Chí Minh | 75 - 110 Triệu VNĐ | 6 | Product Strategy; LLM; Agile; OKRs\nTrưởng phòng Đảm bảo Chất lượng Nhà máy (QA/QC Manager) | Sản xuất Công nghiệp, Điện tử & FDI | Bắc Ninh | 45 - 65 Triệu VNĐ | 5 | ISO 9001; Six Sigma; IATF 16949; JLPT N2`,
+  },
+  users: {
+    label: "Thành Viên & Tài Khoản (Users)",
+    columnsDesc: "Họ và tên | Email đăng nhập | Số điện thoại | Loại (candidate/employer) | Chức danh | Mật khẩu (sẽ mã hóa PBKDF2)",
+    sampleText: `Lê Hoàng Nam | hoangnam.exec@hiremind.vn | +84 909 222 333 | candidate | Giám đốc Tài chính (CFO) | 123456\nTrần Thu Hà | thuha.hrd@techvina.vn | +84 912 444 555 | employer | Giám đốc Nhân sự (CHRO) | 123456`,
+  },
+  products: {
+    label: "Sản Phẩm & Gói Dịch Vụ (Products)",
+    columnsDesc: "Tên Sản phẩm / Gói dịch vụ | Mã SKU | Phân nhóm | Giá VNĐ | Giá USD | Chu kỳ thanh toán",
+    sampleText: `Gói Tuyển dụng AI Campus Hiring 2026 | HM-CAMPUS-AI | Gói Sàng lọc & Phỏng vấn AI | 18000000 | 720 | Theo chiến dịch (30 ngày)\nGói Đăng tin Diamond Spotlight 60 Ngày | HM-DIA-60D | Gói Đăng tin Tuyển dụng VIP | 22000000 | 890 | Theo chiến dịch (30 ngày)`,
+  },
+  candidates: {
+    label: "Hồ Sơ Ứng Viên (Candidates)",
+    columnsDesc: "Họ và tên | Email | Số điện thoại | Số năm KN | Kỹ năng | Tóm tắt thành tựu",
+    sampleText: `Phạm Quốc Bảo | quocbao.exec@hiremind.vn | +84 903 111 222 | 10 | System Architecture; Microservices; Cloud FinOps | Dẫn dắt 85 kỹ sư phát triển nền tảng Core SaaS\nTrần Minh Ngọc | minhngoc.dir@hiremind.vn | +84 908 333 444 | 8 | AI/LLM; MLOps; Python; Data Governance | Triển khai hệ thống AI RAG quy mô tập đoàn`,
+  },
+  requisitions: {
+    label: "Phiếu Định Biên Nhân Sự (Requisitions)",
+    columnsDesc: "Chức danh tuyển dụng | Phòng ban | Số lượng HC | Khung ngân sách | Người đề xuất",
+    sampleText: `Trưởng phòng An ninh Mạng (SecOps Lead) | Khối Công nghệ & Bảo mật | 3 | 60 - 90 Triệu VNĐ | Giám đốc CNTT (CIO)\nKỹ sư Trưởng Tự động hóa Nhà máy | Khối Sản xuất FDI | 5 | 40 - 65 Triệu VNĐ | Giám đốc Nhà máy`,
+  },
+  offers: {
+    label: "Thư Mời Nhận Việc (Offers)",
+    columnsDesc: "Họ tên Ứng viên | Chức danh Bổ nhiệm | Lương Gross (VNĐ) | Ngày bắt đầu làm việc (YYYY-MM-DD)",
+    sampleText: `Nguyễn Minh Khôi | Kiến trúc sư Trưởng AI & Cloud | 85000000 | 2026-11-15\nHoàng Bảo Trâm | Kỹ sư Cầu nối BrSE Nhật Bản N2 | 62000000 | 2026-11-20`,
+  },
+  tenants: {
+    label: "Doanh Nghiệp Thuê Bao B2B (Tenants)",
+    columnsDesc: "Tên Tập đoàn / Công ty | Quốc gia | Ngành nghề | Gói cước SaaS | Email CHRO",
+    sampleText: `Tập đoàn Công nghệ VinaCloud | 🇻🇳 Việt Nam | Công nghệ Thông tin & AI | Enterprise Unlimited | chro@vinacloud.vn\nKanto Electronics FDI Vietnam | 🇯🇵 Nhật Bản (FDI) | Sản xuất Điện tử & Bán dẫn | Growth FDI Multilingual | hr@kanto-fdi.jp`,
+  },
+  ads: {
+    label: "Chiến Dịch Quảng Cáo & Banner VIP (Ads)",
+    columnsDesc: "Tiêu đề Chiến dịch | Tên Công ty | Vị trí (hero_1 / left_top / right_top) | Link Đích",
+    sampleText: `Tập đoàn VinaCloud — Tuyển 20 Chuyên gia AI & Cloud | Tập đoàn VinaCloud | hero_1 | https://jobai.techcorp.info.vn/careers.html`,
+  },
+  categories: {
+    label: "Danh Mục Ngành Nghề (Categories)",
+    columnsDesc: "Tên Danh mục (VI) | Tên Quốc tế (EN) | Mã Code | Khung lương tham chiếu",
+    sampleText: `Năng lượng Tái tạo & ESG (Green Energy & ESG) | Green Energy & Sustainability | CAT_ESG | 40 - 85 Triệu VNĐ`,
+  },
+};
+
+function openUniversalBulkImportModal(defaultModule) {
+  const modKey = UNIVERSAL_IMPORT_TEMPLATES[defaultModule] ? defaultModule : "jobs";
+  const tpl = UNIVERSAL_IMPORT_TEMPLATES[modKey];
+
+  openCrudModal(`
+    <div class="space-y-4 text-xs">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-cyan-100 text-cyan-800">
+            TRUNG TÂM NHẬP EXCEL / CSV HÀNG LOẠT ĐA PHÂN HỆ
+          </span>
+          <h3 class="text-base sm:text-lg font-extrabold mt-1">
+            📤 Nhập Dữ Liệu Hàng Loạt Từ Excel / CSV Vào MySQL &amp; SQLite
+          </h3>
+        </div>
+        <button onclick="closeCrudModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold">✕ Đóng</button>
+      </div>
+
+      <form onsubmit="submitUniversalBulkImport(event)" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block font-bold mb-1">1. Chọn Phân hệ Dữ liệu Cần Nhập Excel *</label>
+            <select id="uni-import-module" onchange="openUniversalBulkImportModal(this.value)"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-extrabold text-blue-700 dark:text-blue-300">
+              ${Object.entries(UNIVERSAL_IMPORT_TEMPLATES)
+                .map(
+                  ([k, v]) => `<option value="${k}" ${k === modKey ? "selected" : ""}>📂 ${v.label}</option>`
+                )
+                .join("")}
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1">2. Tải Lên File (.csv / .txt) Hoặc Tải File Mẫu</label>
+            <div class="flex items-center gap-2">
+              <input type="file" accept=".csv,.txt,.tsv" onchange="handleUniversalFileUpload(this)"
+                class="flex-1 text-[11px] file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-bold" />
+              <button type="button" onclick="downloadUniversalImportTemplate('${modKey}')"
+                class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 text-white font-bold shrink-0">
+                📥 Tải Mẫu CSV
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800">
+          <div class="font-bold text-cyan-900 dark:text-cyan-200">📋 Cấu trúc cột chuẩn cho <b>${tpl.label}</b>:</div>
+          <div class="font-mono text-[11px] text-cyan-800 dark:text-cyan-300 mt-0.5">${tpl.columnsDesc}</div>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">3. Dữ liệu Dòng Nhập (Mỗi dòng 1 bản ghi, phân cách cột bằng dấu | hoặc dấu phẩy ,) *</label>
+          <textarea id="uni-import-rows" rows="6" required
+            class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-[11px]">${tpl.sampleText}</textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-1">
+          <button type="button" onclick="closeCrudModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold">Hủy</button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold shadow-lg">
+            🚀 Thực Thi Nhập Excel Vào Hệ Thống
+          </button>
+        </div>
+      </form>
+    </div>
+  `, () => openUniversalBulkImportModal(modKey));
+}
+
+function handleUniversalFileUpload(inputEl) {
+  const file = inputEl?.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = String(e.target?.result || "").trim();
+    const ta = document.getElementById("uni-import-rows");
+    if (ta && content) {
+      ta.value = content;
+      showToast(`📄 Đã nạp nội dung từ file "${file.name}"!`);
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+function downloadUniversalImportTemplate(modKey) {
+  const tpl = UNIVERSAL_IMPORT_TEMPLATES[modKey] || UNIVERSAL_IMPORT_TEMPLATES.jobs;
+  const csvContent = "\uFEFF" + tpl.columnsDesc.replace(/\s*\|\s*/g, ",") + "\r\n" + tpl.sampleText.replace(/\s*\|\s*/g, ",");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `HireMind_Template_${modKey.toUpperCase()}_UTF8.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function submitUniversalBulkImport(e) {
+  e.preventDefault();
+  const modKey = document.getElementById("uni-import-module")?.value || "jobs";
+  const rawLines = (document.getElementById("uni-import-rows")?.value || "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (modKey === "candidates") {
+    const jobId = state.selectedJobId && state.selectedJobId !== "all" ? state.selectedJobId : state.jobs[0]?.id || "job_01";
+    const candidates = rawLines.map((line) => {
+      const parts = line.includes("|") ? line.split("|").map((p) => p.trim()) : line.split(",").map((p) => p.trim());
+      return {
+        full_name: parts[0] || "Ứng viên Mới",
+        email: parts[1] || "candidate@hiremind.vn",
+        phone: parts[2] || "+84 909 000 111",
+        experience_years: parseFloat(parts[3] || "6"),
+        skills: parts[4] || "Leadership, Agile",
+        summary: parts[5] || "Ứng viên nhập từ Excel",
+      };
+    });
+    const res = await fetch(`${API_BASE}/api/bulk-import/candidates`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: jobId, candidates }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      closeCrudModal();
+      await loadAllData();
+      showToast(`📥 Đã nhập thành công ${data.imported_count} hồ sơ ứng viên vào hệ thống!`);
+    }
+    return;
+  }
+
+  const rows = rawLines.map((line) =>
+    line.includes("|") ? line.split("|").map((p) => p.trim()) : line.split(",").map((p) => p.trim())
+  );
+  const res = await fetch(`${API_BASE}/api/bulk-import/${encodeURIComponent(modKey)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      rows,
+      org_id: state.activeOrgId || "TENANT-VN-01",
+    }),
+  });
+  if (res.ok) {
+    const data = await res.json();
+    closeCrudModal();
+    await loadAllData();
+    showToast(`📥 Đã nhập hàng loạt thành công ${data.imported_count} bản ghi vào phân hệ ${modKey.toUpperCase()}!`);
+  } else {
+    showToast("⚠️ Không thể nhập dữ liệu, vui lòng kiểm tra định dạng cột!", "error");
+  }
+}
+
 
