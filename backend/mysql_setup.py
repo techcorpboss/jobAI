@@ -563,14 +563,14 @@ def provision_and_sync_mysql(export_sql_dump: bool = True) -> Dict[str, Any]:
                     # Only seed if MySQL table is empty or has fewer rows than SQLite
                     cur.execute(f"SELECT COUNT(*) FROM `{tbl_name}`")
                     existing_cnt = cur.fetchone()[0]
-                    if existing_cnt < len(rows):
+                    if existing_cnt < len(rows) or tbl_name in ("portal_users", "service_products", "rbac_roles"):
                         col_list = ", ".join(f"`{c}`" for c in cols)
                         placeholders = ", ".join(["%s"] * len(cols))
                         cur.executemany(
                             f"REPLACE INTO `{tbl_name}` ({col_list}) VALUES ({placeholders})",
                             rows,
                         )
-                        total_synced_rows += len(rows)
+                        total_synced_rows += max(existing_cnt, len(rows))
                     else:
                         total_synced_rows += existing_cnt
         root_conn.close()
