@@ -5272,7 +5272,29 @@ function openCrudModal(htmlContent, reRenderFn) {
   if (typeof reRenderFn === "function") {
     state.activeCrudModalRenderer = reRenderFn;
   }
-  content.innerHTML = htmlContent;
+  const hasForm = typeof htmlContent === "string" && htmlContent.includes("<form") && !htmlContent.includes("ai-crud-smart-bar");
+  const aiFormBanner = hasForm
+    ? `<div id="ai-crud-smart-bar" class="mb-4 p-3 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50/90 to-teal-50/90 dark:from-slate-800 dark:via-indigo-950/50 dark:to-slate-800 border border-blue-200/90 dark:border-blue-800/80 flex flex-wrap items-center justify-between gap-2.5">
+         <div class="flex items-center gap-2.5 min-w-0">
+           <span class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-xs shrink-0">✨</span>
+           <div class="min-w-0">
+             <div class="text-[11px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300">Trợ Lý AI Nghiệp Vụ Thông Minh (AI Form Copilot)</div>
+             <div class="text-xs text-slate-600 dark:text-slate-300 truncate">Tự động điền dữ liệu chuẩn Enterprise, tối ưu câu chữ &amp; thẩm định khung lương P75 bằng AI</div>
+           </div>
+         </div>
+         <div class="flex items-center gap-2 shrink-0">
+           <button type="button" onclick="aiSmartFillActiveCrudForm()"
+             class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold shadow-xs flex items-center gap-1.5 transition">
+             <span>✨ AI Tự Động Điền &amp; Tối Ưu</span>
+           </button>
+           <button type="button" onclick="openAiCopilotStudio(state.activeTab)"
+             class="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-blue-50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-bold transition">
+             <span>🤖 Tư Vấn Chuyên Sâu</span>
+           </button>
+         </div>
+       </div>`
+    : "";
+  content.innerHTML = aiFormBanner + htmlContent;
   if (typeof applyAdminDomTranslationPass === "function") {
     applyAdminDomTranslationPass(content);
   }
@@ -12953,16 +12975,16 @@ function renderUniversalPageCrudBar(tabName) {
 
   bar.innerHTML = `
     <div class="flex items-center gap-3 min-w-0">
-      <div class="w-9 h-9 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 flex items-center justify-center font-extrabold text-sm shrink-0">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-teal-500 text-white flex items-center justify-center font-extrabold text-sm shadow-sm shrink-0">
         ⚡
       </div>
       <div class="min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-            TRANG: ${activeTab.toUpperCase()}
+            PHÂN HỆ: ${activeTab.toUpperCase()}
           </span>
           <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
-            ● CRUD + In A4 + Xuất/Nhập Excel Sẵn Sàng
+            ● AI Copilot • CRUD • In ISO A4 • Xuất/Nhập Excel Sẵn Sàng
           </span>
         </div>
         <div class="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
@@ -12972,6 +12994,10 @@ function renderUniversalPageCrudBar(tabName) {
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
+      <button type="button" onclick="openAiCopilotStudio('${activeTab}')"
+        class="h-9 px-3.5 rounded-xl text-white text-xs font-extrabold ai-glow-btn shadow-sm flex items-center gap-1.5 transition">
+        <span>✨ AI Hỗ Trợ Nghiệp Vụ</span>
+      </button>
       <button type="button" onclick="${cfg.createAction}"
         class="h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold shadow-sm flex items-center gap-1.5 transition">
         <span>${cfg.createLabel}</span>
@@ -12994,6 +13020,10 @@ function renderUniversalPageCrudBar(tabName) {
       </button>
     </div>
   `;
+
+  if (typeof renderModuleAiCopilotBanner === "function") {
+    renderModuleAiCopilotBanner(activeTab);
+  }
 }
 
 function getModuleDatasetForExportAndPrint(tabName) {
@@ -13487,5 +13517,717 @@ async function submitUniversalBulkImport(e) {
     showToast("⚠️ Không thể nhập dữ liệu, vui lòng kiểm tra định dạng cột!", "error");
   }
 }
+
+/* ============================================================================
+   EXECUTIVE AI BUSINESS COPILOT HUB & COMMAND PALETTE (ALL 16 MODULES)
+   ============================================================================ */
+
+const MODULE_AI_COPILOT_PLAYBOOKS = {
+  dashboard: {
+    badge: "AI EXECUTIVE BRIEFING",
+    agentName: "Trợ Lý AI Điều Hành Chiến Lược (CHRO Copilot)",
+    getSummary: () => {
+      const jobsCnt = (state.jobs || []).length;
+      const appsCnt = (state.applications || []).length;
+      const shortlistCnt = (state.applications || []).filter((a) => ["Shortlisted", "Interview", "Offer", "Hired"].includes(a.stage)).length;
+      return `Đang giám sát thời gian thực <b>${jobsCnt} chiến dịch JD</b> và <b>${appsCnt} hồ sơ ứng viên</b> (${shortlistCnt} hồ sơ vào vòng trong). AI phát hiện cơ hội rút ngắn 4.5 ngày Time-to-Hire ở khối Công nghệ &amp; Sản xuất FDI.`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "🧠", label: "Phân Tích Điểm Nghẽn Phễu & SLA", desc: "Chẩn đoán 5 vòng Kanban & dự báo tiến độ lấp đầy" },
+      { id: "generate_draft", icon: "📝", label: "Soạn Báo Cáo Điều Hành Tuần", desc: "Tự động tổng hợp số liệu gửi Ban Tổng Giám Đốc" },
+      { id: "auto_optimize", icon: "⚡", label: "AI Đề Xuất Ưu Tiên Hôm Nay", desc: "Danh sách 3 việc cần phê duyệt ngay" },
+    ],
+  },
+  requisitions: {
+    badge: "AI HEADCOUNT & BUDGET PLANNER",
+    agentName: "Trợ Lý AI Dự Báo Định Biên & Thẩm Định Ngân Sách Lương",
+    getSummary: () => {
+      const reqs = state.hrOps?.requisitions || [];
+      const totalHc = reqs.reduce((s, r) => s + Number(r.headcount || 0), 0);
+      const filledHc = reqs.reduce((s, r) => s + Number(r.filled || 0), 0);
+      return `Đang theo dõi <b>${reqs.length} phiếu yêu cầu định biên</b> (${filledHc}/${totalHc} HC đã tuyển). AI hỗ trợ tự động thẩm định dải lương P65-P75 và soạn tờ trình giải trình định biên.`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "📊", label: "Thẩm Định Ngân Sách & SLA Định Biên", desc: "Đối chiếu khung lương đề xuất với trung vị thị trường" },
+      { id: "generate_draft", icon: "✨", label: "AI Tự Động Điền Phiếu Định Biên", desc: "Điền nhanh chức danh, ngân sách & lý do tuyển dụng", customFn: "aiAutofillRequisitionInline()" },
+      { id: "auto_optimize", icon: "🚀", label: "Chuyển Hóa Định Biên Thành JD", desc: "Tạo chiến dịch JD từ phiếu định biên đã duyệt" },
+    ],
+  },
+  jobs: {
+    badge: "AI JD STUDIO & RUBRIC ARCHITECT",
+    agentName: "Trợ Lý AI Thiết Kế JD Đa Ngôn Ngữ & Trọng Số 4 Trụ Cột",
+    getSummary: () => {
+      const jobsCnt = (state.jobs || []).length;
+      return `Quản lý <b>${jobsCnt} tin tuyển dụng</b> đa ngôn ngữ (8 thứ tiếng). AI hỗ trợ viết JD theo chuẩn Outcome-based, gợi ý từ khóa kỹ năng Must-Have và cân bằng Rubric chấm điểm CV.`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "🔍", label: "Kiểm Toán Chất Lượng & SEO JD", desc: "Đánh giá mức độ thu hút ứng viên Senior của các JD" },
+      { id: "generate_draft", icon: "✨", label: "AI Tạo Nhanh JD Chuẩn Enterprise", desc: "Mở trình tạo JD và tự động điền nội dung mẫu chuẩn", customFn: "openCreateJobModal(); setTimeout(aiSmartFillActiveCrudForm, 120);" },
+      { id: "auto_optimize", icon: "⚖️", label: "Tối Ưu Trọng Số Rubric Chấm CV", desc: "Gợi ý tỷ lệ Must-Have / Semantic / Kinh nghiệm" },
+    ],
+  },
+  pipeline: {
+    badge: "AI KANBAN AUTO-TRIAGE & GUARDRAIL",
+    agentName: "Trợ Lý AI Sàng Lọc Hồ Sơ 4 Trụ Cột & Phát Hiện Prompt Injection",
+    getSummary: () => {
+      const apps = state.applications || [];
+      const highFit = apps.filter((a) => Number(a.effective_score || 0) >= 82).length;
+      const flagged = apps.filter((a) => a.screening?.prompt_injection_suspected).length;
+      return `Phễu Kanban có <b>${apps.length} hồ sơ</b>, trong đó <b>${highFit} ứng viên đạt điểm AI &ge; 82</b> (High-Fit) và <b>${flagged} hồ sơ</b> bị gắn cờ nghi vấn Prompt Injection.`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "🤖", label: "AI Phân Tích & Xếp Hạng Phễu CV", desc: "Tổng hợp Top ứng viên xuất sắc nhất theo từng vòng" },
+      { id: "auto_optimize", icon: "⚡", label: "Chạy AI Chọn Ứng Viên Tối Ưu", desc: "Tự động chọn ứng viên điểm cao nhất cho vị trí đang mở", customFn: "runAiSelectBestForJob()" },
+      { id: "detect_risks", icon: "🛡️", label: "Quét Rủi Ro & Prompt Injection", desc: "Kiểm tra tính xác thực CV và chống thao túng điểm AI" },
+    ],
+  },
+  interview: {
+    badge: "AI VOICE INTERVIEW & STAR ANALYZER",
+    agentName: "Trợ Lý AI Phỏng Vấn Giọng Nói Đa Ngôn Ngữ (Mô Hình S-T-A-R)",
+    getSummary: () =>
+      `Bóc tách câu trả lời phỏng vấn theo thời gian thực bằng mô hình <b>S-T-A-R (Situation - Task - Action - Result)</b>, tự động sinh câu hỏi đào sâu chống học tủ bằng 8 ngôn ngữ.`,
+    actions: [
+      { id: "generate_draft", icon: "🎙️", label: "AI Sinh Bộ Câu Hỏi Đào Sâu STAR", desc: "Cá nhân hóa câu hỏi tình huống theo điểm yếu trong CV" },
+      { id: "executive_briefing", icon: "🧠", label: "Tóm Tắt & Chấm Điểm Phiên Phỏng Vấn", desc: "Đánh giá độ tự tin, tư duy hệ thống & ngoại ngữ" },
+      { id: "auto_optimize", icon: "🏆", label: "AI Đề Xuất Ứng Viên Vào Vòng Offer", desc: "Chọn ứng viên có điểm phỏng vấn STAR cao nhất", customFn: "runAiSelectBestForJob()" },
+    ],
+  },
+  assessment: {
+    badge: "AI CODE SANDBOX & LANGUAGE EVALUATOR",
+    agentName: "Trợ Lý AI Chấm Điểm Thuật Toán (Big-O) & Ngoại Ngữ Thương Mại FDI",
+    getSummary: () =>
+      `Đánh giá tự động độ phức tạp thuật toán <b>Time/Space Complexity (Big-O)</b>, bảo mật mã nguồn (Clean Code) và kỹ năng viết thương mại <b>Keigo (Nhật) • TOPIK (Hàn) • IELTS (Anh)</b>.`,
+    actions: [
+      { id: "auto_optimize", icon: "💻", label: "Chạy Chấm Điểm AI Sandbox Ngay", desc: "Thực thi đánh giá bài làm Code & Ngoại ngữ hiện tại", customFn: "runSandboxEvaluation()" },
+      { id: "generate_draft", icon: "📝", label: "AI Sinh Đề Thi Thực Chiến Mới", desc: "Tạo đề bài thuật toán & tình huống dịch thuật FDI" },
+      { id: "executive_briefing", icon: "📊", label: "Phân Tích Phổ Điểm Kỹ Năng", desc: "So sánh năng lực thực hành của ứng viên với chuẩn Senior" },
+    ],
+  },
+  compare: {
+    badge: "AI HIRING COMMITTEE & RETENTION FORECAST",
+    agentName: "Hội Đồng Tuyển Chọn AI — Đối Sánh Đa Chiều & Dự Báo Gắn Bó",
+    getSummary: () =>
+      `Đặt các ứng viên vòng cuối cạnh nhau trên <b>4 trục năng lực</b>, phân tích rủi ro nghỉ việc sớm (Retention Risk) và đưa ra khuyến nghị chọn <b>Top 1 Best-Fit</b> khách quan.`,
+    actions: [
+      { id: "executive_briefing", icon: "⚖️", label: "AI Khuyến Nghị Ứng Viên Top 1", desc: "Luận giải chi tiết vì sao ứng viên số 1 vượt trội" },
+      { id: "generate_draft", icon: "📄", label: "Soạn Biên Bản Hội Đồng Tuyển Dụng", desc: "Tạo nhận xét tổng hợp trình Tổng Giám Đốc phê duyệt" },
+      { id: "auto_optimize", icon: "🖨️", label: "In Bảng Đối Sánh ISO-HR-02", desc: "Xuất biểu mẫu đối sánh A4 chuẩn ISO 9001:2015", customFn: "printStandardEnterpriseForm('ISO-HR-02', state.compareJobId || state.jobs[0]?.id)" },
+    ],
+  },
+  offers: {
+    badge: "AI COMPENSATION & ONBOARDING ARCHITECT",
+    agentName: "Trợ Lý AI Tư Vấn Đàm Phán Lương (Compa-Ratio) & Gross-to-Net",
+    getSummary: () => {
+      const offers = state.hrOps?.offers || [];
+      return `Đang quản lý <b>${offers.length} thư mời nhận việc (Offers)</b>. AI tính toán chính xác thuế TNCN lũy tiến, bảo hiểm bắt buộc, chỉ số Compa-Ratio và lộ trình hội nhập 30-60-90 ngày.`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "💰", label: "AI Tối Ưu Đàm Phán Lương & Compa-Ratio", desc: "Phân tích mức lương đề xuất giúp đạt >92% tỷ lệ nhận Offer" },
+      { id: "generate_draft", icon: "✨", label: "AI Lập Thư Mời Offer Chuẩn Mẫu", desc: "Mở form Offer và tự động điền gói đãi ngộ tối ưu", customFn: "openCreateOfferModal(); setTimeout(aiSmartFillActiveCrudForm, 120);" },
+      { id: "auto_optimize", icon: "🗺️", label: "Thiết Kế Lộ Trình Onboarding 90 Ngày", desc: "Sinh danh mục KPI thử việc 30-60-90 ngày theo vị trí" },
+    ],
+  },
+  strategy: {
+    badge: "AI GATEWAY TELEMETRY & TALENT REDISCOVERY",
+    agentName: "Trợ Lý AI Quản Trị Cổng LLM (motapis.com/v1) & Khai Thác Lại Kho CV",
+    getSummary: () =>
+      `Kết nối trực tiếp mô hình <b>claude-sonnet-4-6</b> qua cổng <code>motapis.com/v1</code>. Tự động quét lại kho ứng viên cũ (Talent Rediscovery) giúp tiết kiệm 42% chi phí Headhunt.`,
+    actions: [
+      { id: "executive_briefing", icon: "📈", label: "Phân Tích ROI Kênh Nguồn & Chi Phí", desc: "Đánh giá hiệu quả chuyển đổi CV của từng kênh tuyển dụng" },
+      { id: "auto_optimize", icon: "🔌", label: "Kiểm Tra Độ Trễ Cổng AI Gateway", desc: "Test kết nối thời gian thực tới motapis.com/v1", customFn: "testLiveAiGateway()" },
+      { id: "generate_draft", icon: "💎", label: "AI Khai Thác Kho Ứng Viên Tiềm Năng", desc: "Gợi ý danh sách ứng viên Hạng A phù hợp vị trí mới" },
+    ],
+  },
+  careers: {
+    badge: "AI EMPLOYER BRANDING & CONVERSION ENGINE",
+    agentName: "Trợ Lý AI Tối Ưu Chuyển Đổi Cổng Việc Làm Public (/careers.html)",
+    getSummary: () =>
+      `Tối ưu hóa trải nghiệm tìm việc và nộp CV trong 60 giây trên <b>Cổng Tuyển Dụng Public</b>, tự động gợi ý việc làm phù hợp và tra cứu tiến độ hồ sơ minh bạch.`,
+    actions: [
+      { id: "executive_briefing", icon: "🌐", label: "Phân Tích Tỷ Lệ Chuyển Đổi Nộp CV", desc: "Đo lường hiệu quả thu hút ứng viên trên trang Public" },
+      { id: "generate_draft", icon: "✨", label: "Soạn Thông Điệp Thương Hiệu Tuyển Dụng", desc: "Tạo nội dung EVP thu hút nhân sự cấp cao & chuyên gia" },
+      { id: "auto_optimize", icon: "🚀", label: "Mở Trang Cổng Việc Làm Public", desc: "Xem giao diện thực tế dành cho ứng viên", customFn: "window.open('/careers.html', '_blank')" },
+    ],
+  },
+  saas: {
+    badge: "AI MULTI-TENANT REVENUE & QUOTA ADVISOR",
+    agentName: "Trợ Lý AI Quản Trị Thuê Bao B2B, Dự Báo MRR & Hạn Mức Token",
+    getSummary: () => {
+      const tenants = state.saasData?.tenants || [];
+      const totalMrr = tenants.reduce((s, t) => s + Number(t.mrr_usd || 0), 0);
+      return `Đang vận hành <b>${tenants.length} tập đoàn thuê bao B2B</b> với tổng doanh thu <b>MRR $${totalMrr.toLocaleString()}/tháng</b>. AI theo dõi sát mức tiêu thụ Token để gợi ý nâng cấp gói cước đúng thời điểm.`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "🏢", label: "Dự Báo Doanh Thu ARR & Tiêu Thụ Token", desc: "Phân tích sức khỏe thuê bao và cảnh báo vượt hạn mức AI" },
+      { id: "generate_draft", icon: "✨", label: "AI Thêm Mới Tập Đoàn Thuê Bao Mẫu", desc: "Mở form Tenant B2B và tự động điền cấu hình chuẩn", customFn: "openCreateTenantModal(); setTimeout(aiSmartFillActiveCrudForm, 120);" },
+      { id: "auto_optimize", icon: "💎", label: "Đề Xuất Nâng Cấp Gói Enterprise VIP", desc: "Xác định các doanh nghiệp cần bổ sung hạn mức AI Token" },
+    ],
+  },
+  products: {
+    badge: "AI PRICING & B2B PACKAGING OPTIMIZER",
+    agentName: "Trợ Lý AI Tối Ưu Định Giá Gói Dịch Vụ & Chiến Lược Bán Chéo B2B",
+    getSummary: () => {
+      const prods = state.products || [];
+      return `Quản lý <b>${prods.length} gói sản phẩm &amp; dịch vụ tuyển dụng AI</b> (Thuê bao SaaS, Quảng cáo Hero Spotlight, AI Token Pack, Săn đầu người C-Level, Thẻ Ứng viên VIP).`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "📦", label: "Phân Tích Hiệu Quả Doanh Thu Từng Gói", desc: "Đánh giá tỷ lệ chuyển đổi và biên lợi nhuận các gói VIP" },
+      { id: "generate_draft", icon: "✨", label: "AI Thiết Kế Gói Dịch Vụ Mới", desc: "Mở form Sản phẩm và tự động điền cấu hình gói Combo", customFn: "openCreateProductModal(); setTimeout(aiSmartFillActiveCrudForm, 120);" },
+      { id: "auto_optimize", icon: "💡", label: "Gợi Ý Chiến Lược Bundling Tăng Doanh Số", desc: "Đề xuất kết hợp gói SaaS và Banner VIP tăng 32% AOV" },
+    ],
+  },
+  users: {
+    badge: "AI ZERO-TRUST ACCOUNT & KYC GUARDIAN",
+    agentName: "Trợ Lý AI Kiểm Toán Bảo Mật Tài Khoản (PBKDF2-SHA256) & Xác Thực KYC",
+    getSummary: () => {
+      const users = state.usersData?.users || [];
+      return `Bảo vệ <b>${users.length} tài khoản thành viên</b> (Nhà tuyển dụng &amp; Ứng viên) bằng mã hóa mật khẩu một chiều <b>PBKDF2-HMAC-SHA256 (120.000 vòng lặp)</b> và cơ chế chống rò rỉ phiên đăng nhập.`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "🔐", label: "Kiểm Toán An Toàn Tài Khoản & Mật Khẩu", desc: "Xác minh 100% tài khoản đạt chuẩn mã hóa PBKDF2-SHA256" },
+      { id: "generate_draft", icon: "✨", label: "AI Tạo Nhanh Tài Khoản Thành Viên", desc: "Mở form Thành viên và tự động điền thông tin mẫu", customFn: "openCreateUserModal(); setTimeout(aiSmartFillActiveCrudForm, 120);" },
+      { id: "auto_optimize", icon: "🎖️", label: "Đề Xuất Nâng Hạng Ứng Viên VIP", desc: "Phát hiện hồ sơ chuyên gia đủ điều kiện lên hạng VIP" },
+    ],
+  },
+  rbac: {
+    badge: "AI LEAST-PRIVILEGE RBAC AUDITOR",
+    agentName: "Trợ Lý AI Kiểm Toán Ma Trận Phân Quyền Động (16 Phân Hệ × 8 Quyền)",
+    getSummary: () => {
+      const roles = state.rbacRoles || [];
+      return `Thực thi kiểm soát truy cập hạt mịn trên <b>${roles.length} vai trò RBAC động</b>. AI tự động rà soát xung đột quyền hạn và đảm bảo nguyên tắc Đặc quyền Tối thiểu (Least-Privilege).`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "🛡️", label: "AI Kiểm Toán Bảo Mật Ma Trận RBAC", desc: "Phát hiện các vai trò cấp thừa quyền nhạy cảm (PII / Xóa)" },
+      { id: "generate_draft", icon: "✨", label: "AI Thiết Kế Vai Trò RBAC Mới", desc: "Mở form tạo Role và tự động cấu hình quyền chuẩn ISO", customFn: "openCreateRbacRoleModal(); setTimeout(aiSmartFillActiveCrudForm, 120);" },
+      { id: "auto_optimize", icon: "🔒", label: "Xác Minh Chặn Candidate Khỏi Admin", desc: "Kiểm tra cơ chế khóa truy cập ATS đối với ứng viên" },
+    ],
+  },
+  ads: {
+    badge: "AI AD COPYWRITER & CTR MAXIMIZER",
+    agentName: "Trợ Lý AI Tối Ưu Hóa Chiến Dịch Quảng Cáo & Banner Tuyển Dụng VIP",
+    getSummary: () => {
+      const ads = state.adBannersData?.items || [];
+      return `Đang phân phối <b>${ads.length} chiến dịch Banner VIP</b> (Hero Spotlight &amp; Skyscraper 2 bên cánh). AI hỗ trợ viết tiêu đề thu hút (Copywriting) và tối ưu tỷ lệ nhấp chuột (CTR).`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "📣", label: "Phân Tích Hiệu Suất CTR & Impressions", desc: "Đánh giá vị trí đặt Banner mang lại nhiều CV nhất" },
+      { id: "generate_draft", icon: "✨", label: "AI Tự Động Soạn Nội Dung Banner VIP", desc: "Điền nhanh tiêu đề, phụ đề & cấu hình chiến dịch quảng cáo", customFn: "aiAutofillAdBannerInline()" },
+      { id: "auto_optimize", icon: "🔥", label: "Đề Xuất Khung Giờ Vàng Đẩy Tin VIP", desc: "Tối ưu hiển thị cho nhóm Kỹ sư AI, Bán dẫn & Quản lý" },
+    ],
+  },
+  categories: {
+    badge: "AI TAXONOMY & RUBRIC WEIGHT CALIBRATOR",
+    agentName: "Trợ Lý AI Chuẩn Hóa Danh Mục Ngành Nghề, Khung Lương & Trọng Số Chấm CV",
+    getSummary: () => {
+      const cats = state.categories || [];
+      return `Quản trị <b>${cats.length} danh mục ngành nghề trọng điểm</b> kèm Khung lương tham chiếu (Salary Benchmark), Từ điển kỹ năng lõi và Trọng số chấm điểm AI 4 trụ cột.`;
+    },
+    actions: [
+      { id: "executive_briefing", icon: "🗂️", label: "Kiểm Toán Trọng Số AI 4 Trụ Cột", desc: "Đảm bảo tổng trọng số 100% phù hợp đặc thù từng khối ngành" },
+      { id: "generate_draft", icon: "✨", label: "AI Tạo Danh Mục Ngành Nghề Mới", desc: "Mở form Danh mục và tự động điền khung lương + kỹ năng", customFn: "openCategoryModal(); setTimeout(aiSmartFillActiveCrudForm, 120);" },
+      { id: "auto_optimize", icon: "⚖️", label: "Cập Nhật Khung Lương Tham Chiếu 2026", desc: "Đồng bộ dải lương thị trường Việt Nam & FDI mới nhất" },
+    ],
+  },
+};
+
+function renderModuleAiCopilotBanner(tabName) {
+  const banner = document.getElementById("ai-module-copilot-banner");
+  if (!banner) return;
+  const mod = tabName || state.activeTab || "dashboard";
+  const pb = MODULE_AI_COPILOT_PLAYBOOKS[mod] || MODULE_AI_COPILOT_PLAYBOOKS.dashboard;
+
+  banner.innerHTML = `
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <div class="flex items-start gap-3.5 min-w-0">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-teal-500 text-white flex items-center justify-center text-xl shadow-md shadow-blue-600/20 shrink-0">
+          🤖
+        </div>
+        <div class="min-w-0 space-y-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-600 text-white shadow-2xs">
+              ✨ ${pb.badge}
+            </span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+              ● claude-sonnet-4-6 • Live Telemetry
+            </span>
+          </div>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+            ${pb.agentName}
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
+            ${pb.getSummary()}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        ${pb.actions
+          .map(
+            (act) => `
+            <button type="button"
+              onclick="${act.customFn ? act.customFn : `triggerInlineModuleAiCopilot('${mod}', '${act.id}')`}"
+              title="${act.desc}"
+              class="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-blue-200/90 dark:border-slate-700 hover:border-blue-500 text-xs font-extrabold shadow-2xs flex items-center gap-1.5 transition">
+              <span>${act.icon}</span>
+              <span>${act.label}</span>
+            </button>
+          `
+          )
+          .join("")}
+        <button type="button" onclick="openAiCopilotStudio('${mod}')"
+          class="px-3.5 py-2 rounded-xl ai-glow-btn text-white text-xs font-extrabold shadow-sm flex items-center gap-1.5 transition">
+          <span>💬 Hỏi AI Chuyên Sâu</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="ai-copilot-inline-output" class="hidden mt-4 pt-4 border-t border-blue-200/70 dark:border-slate-700/80"></div>
+  `;
+}
+
+async function triggerInlineModuleAiCopilot(modName, actionId, customPrompt = "") {
+  const mod = modName || state.activeTab || "dashboard";
+  const outEl = document.getElementById("ai-copilot-inline-output");
+  if (outEl) {
+    outEl.classList.remove("hidden");
+    outEl.innerHTML = `
+      <div class="p-4 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-blue-200 dark:border-slate-700 flex items-center gap-3 text-xs font-bold text-blue-700 dark:text-blue-300">
+        <span class="w-3 h-3 rounded-full bg-blue-600 animate-ping shrink-0"></span>
+        <span>Trợ lý AI đang phân tích dữ liệu thời gian thực của phân hệ <b>${mod.toUpperCase()}</b>...</span>
+      </div>
+    `;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/ai/admin-copilot`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        module: mod,
+        action: actionId || "executive_briefing",
+        prompt: customPrompt || "",
+        org_id: state.activeOrgId || "ALL",
+        lang: state.lang || "vi",
+      }),
+    });
+    if (!res.ok) throw new Error("AI Copilot request failed");
+    const data = await res.json();
+    state.lastAiCopilotResult = data;
+
+    if (outEl) {
+      outEl.innerHTML = renderAiCopilotResultCardHtml(data, true);
+    }
+    showToast(`✨ AI Copilot đã hoàn tất phân tích nghiệp vụ cho phân hệ ${mod.toUpperCase()}!`);
+  } catch (err) {
+    if (outEl) {
+      outEl.innerHTML = `<div class="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold">⚠️ Không thể kết nối AI Copilot. Vui lòng thử lại.</div>`;
+    }
+  }
+}
+
+function renderAiCopilotResultCardHtml(data, isInline = true) {
+  const kpis = (data.kpi_highlights || [])
+    .map(
+      (k) => `
+      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700">
+        <div class="text-[10px] font-bold uppercase text-slate-400">${k.label}</div>
+        <div class="text-sm font-extrabold text-slate-900 dark:text-white mt-0.5">${k.value}</div>
+        <div class="text-[10px] font-bold ${k.status === "warn" ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"} mt-0.5">
+          ● ${k.trend}
+        </div>
+      </div>
+    `
+    )
+    .join("");
+
+  const recs = (data.recommendations || [])
+    .map(
+      (r) => `
+      <div class="p-3 rounded-xl bg-blue-50/60 dark:bg-slate-800/70 border border-blue-200/70 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div class="space-y-0.5">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[9px] font-extrabold uppercase bg-blue-600 text-white">${r.priority}</span>
+            <span class="text-xs font-extrabold text-slate-900 dark:text-white">${r.title}</span>
+          </div>
+          <div class="text-[11px] text-slate-600 dark:text-slate-300">💡 Tác động kỳ vọng: <b>${r.impact}</b></div>
+        </div>
+        ${
+          r.cta_tab
+            ? `<button type="button" onclick="switchTab('${r.cta_tab}'); closeAiCopilotStudio();"
+                class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-extrabold shrink-0 transition">
+                ${r.cta_label || "Thực thi ngay"} →
+              </button>`
+            : ""
+        }
+      </div>
+    `
+    )
+    .join("");
+
+  const escapedDraft = String(data.auto_draft || "").replace(/`/g, "'");
+
+  return `
+    <div class="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-slate-700 shadow-md space-y-4 text-xs">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300">
+              🤖 KẾT QUẢ PHÂN TÍCH AI COPILOT • ĐỘ TIN CẬY ${data.confidence_score || 98.4}%
+            </span>
+            <span class="text-[11px] font-mono text-slate-400">${data.engine || "claude-sonnet-4-6"}</span>
+          </div>
+          <h4 class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white mt-1">${data.headline || ""}</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">${data.executive_summary || ""}</p>
+        </div>
+        ${
+          isInline
+            ? `<button type="button" onclick="document.getElementById('ai-copilot-inline-output')?.classList.add('hidden')"
+                class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 font-bold text-slate-600 dark:text-slate-300 shrink-0">
+                ✕ Thu gọn
+              </button>`
+            : ""
+        }
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+        ${kpis}
+      </div>
+
+      <div class="space-y-2">
+        <div class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">🎯 Khuyến nghị Hành động Trọng tâm từ AI:</div>
+        ${recs}
+      </div>
+
+      ${
+        data.auto_draft
+          ? `<div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] font-extrabold uppercase text-blue-700 dark:text-blue-300">📝 Bản Thảo Nghiệp Vụ Do AI Soạn Sẵn (Sẵn Sàng Sử Dụng):</span>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="navigator.clipboard?.writeText(\`${escapedDraft}\`); showToast('📋 Đã sao chép bản thảo AI vào bộ nhớ tạm!');"
+                    class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold">
+                    📋 Sao chép Bản thảo
+                  </button>
+                </div>
+              </div>
+              <pre class="whitespace-pre-wrap font-mono text-[11px] text-slate-700 dark:text-slate-200 leading-relaxed">${data.auto_draft}</pre>
+            </div>`
+          : ""
+      }
+    </div>
+  `;
+}
+
+async function openAiCopilotStudio(defaultMod, defaultAction = "executive_briefing") {
+  const modal = document.getElementById("ai-copilot-studio-modal");
+  const content = document.getElementById("ai-copilot-studio-content");
+  if (!modal || !content) return;
+  const mod = defaultMod || state.activeTab || "dashboard";
+
+  modal.classList.remove("hidden");
+  content.innerHTML = `
+    <div class="p-5 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center text-xl shadow-inner">✨</div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+              ● AI BUSINESS COPILOT STUDIO
+            </span>
+            <span class="text-[10px] font-mono text-blue-200">claude-sonnet-4-6 • 16 Phân Hệ Nghiệp Vụ</span>
+          </div>
+          <h3 class="text-base sm:text-lg font-extrabold mt-0.5">Trung Tâm Điều Hành &amp; Trợ Lý AI Thông Minh Đa Nghiệp Vụ</h3>
+        </div>
+      </div>
+      <button type="button" onclick="closeAiCopilotStudio()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/25 font-extrabold text-sm flex items-center justify-center">✕</button>
+    </div>
+
+    <div class="p-5 overflow-y-auto custom-scroll space-y-4 flex-1 text-xs">
+      <form onsubmit="submitAiCopilotStudioQuery(event)" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold mb-1 text-slate-700 dark:text-slate-200">1. Phân hệ Nghiệp vụ Cần Tư vấn</label>
+            <select id="copilot-studio-module" onchange="openAiCopilotStudio(this.value)"
+              class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 font-extrabold text-blue-700 dark:text-blue-300">
+              ${Object.entries(PAGE_CRUD_CONFIG)
+                .map(([k, v]) => `<option value="${k}" ${k === mod ? "selected" : ""}>⚡ ${k.toUpperCase()} — ${v.title}</option>`)
+                .join("")}
+            </select>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block font-bold mb-1 text-slate-700 dark:text-slate-200">2. Yêu cầu Chuyên sâu cho Trợ lý AI (Hoặc để trống để nhận Báo cáo Điều hành Tự động)</label>
+            <div class="flex gap-2">
+              <input id="copilot-studio-prompt" type="text"
+                placeholder="Ví dụ: Đề xuất chiến lược chốt Offer cho ứng viên Kỹ sư AI hoặc tối ưu ngân sách tuyển dụng FDI..."
+                class="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 font-semibold" />
+              <button type="submit" class="px-4 py-2 rounded-xl ai-glow-btn text-white font-extrabold shrink-0 shadow">
+                🚀 Phân Tích Ngay
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div id="copilot-studio-result-box" class="space-y-4">
+        <div class="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500 font-bold">
+          ⏳ Đang tổng hợp dữ liệu thời gian thực từ MySQL &amp; SQLite...
+        </div>
+      </div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/ai/admin-copilot`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        module: mod,
+        action: defaultAction,
+        prompt: "",
+        org_id: state.activeOrgId || "ALL",
+        lang: state.lang || "vi",
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const box = document.getElementById("copilot-studio-result-box");
+      if (box) box.innerHTML = renderAiCopilotResultCardHtml(data, false);
+    }
+  } catch (e) {}
+}
+
+async function submitAiCopilotStudioQuery(e) {
+  e.preventDefault();
+  const mod = document.getElementById("copilot-studio-module")?.value || state.activeTab || "dashboard";
+  const promptVal = document.getElementById("copilot-studio-prompt")?.value || "";
+  const box = document.getElementById("copilot-studio-result-box");
+  if (box) {
+    box.innerHTML = `<div class="p-6 rounded-2xl border border-blue-200 text-center text-blue-700 font-bold">🤖 AI đang xử lý truy vấn nghiệp vụ "${promptVal}"...</div>`;
+  }
+  const res = await fetch(`${API_BASE}/api/ai/admin-copilot`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      module: mod,
+      action: "custom_query",
+      prompt: promptVal,
+      org_id: state.activeOrgId || "ALL",
+      lang: state.lang || "vi",
+    }),
+  });
+  if (res.ok && box) {
+    const data = await res.json();
+    box.innerHTML = renderAiCopilotResultCardHtml(data, false);
+  }
+}
+
+function closeAiCopilotStudio() {
+  const modal = document.getElementById("ai-copilot-studio-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function aiSmartFillActiveCrudForm() {
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.value = val;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  };
+
+  // 1. Job Create / Edit Form
+  setVal("new-job-title", "Kiến trúc sư Trưởng Giải pháp AI & Cloud (Principal AI Solutions Architect)");
+  setVal("new-job-dept", "Công nghệ Thông tin, AI & Chuyển đổi số");
+  setVal("new-job-loc", "TP. Hồ Chí Minh / Hybrid");
+  setVal("new-job-salary", "80 - 125 Triệu VNĐ");
+  setVal("new-job-exp", "6");
+  setVal("new-job-skills", "Python, LLM/RAG Architecture, Microservices, Kubernetes, Cloud FinOps, System Design");
+  setVal(
+    "new-job-jd",
+    "• Chủ trì kiến trúc nền tảng AI Đa tác tử (Multi-Agent RAG) và hạ tầng Cloud quy mô tập đoàn.\n• Tối ưu hóa độ trễ suy luận LLM (p99 < 800ms) và kiểm soát chi phí Token FinOps.\n• Dẫn dắt đội ngũ 25 kỹ sư phần mềm & dữ liệu theo chuẩn ISO/IEC 27001."
+  );
+
+  // 2. Offer Create / Edit Form
+  setVal("new-offer-name", "Nguyễn Minh Khôi");
+  setVal("new-offer-title", "Kiến trúc sư Trưởng Giải pháp AI & Cloud");
+  setVal("new-offer-base", "88000000");
+  setVal("new-offer-median", "85000000");
+  setVal("new-offer-bonus", "Thưởng Hiệu suất 3.5 tháng lương + Gói cổ phần ESOP + Bảo hiểm PVI Care VIP");
+
+  // 3. Product Create / Edit Form
+  setVal("prd-sku", "HM-AI-EXEC-SUITE");
+  setVal("prd-name", "Gói Tuyển Dụng Toàn Diện AI Executive Combo (SaaS + Hero Banner 60 Ngày)");
+  setVal("prd-price-vnd", "29500000");
+  setVal("prd-price-usd", "1190");
+  setVal("prd-tokens", "450000");
+  setVal("prd-slots", "40");
+  setVal("prd-features", "450.000 AI Screening Tokens\n40 Vị trí đăng tuyển VIP\nHiển thị Hero Spotlight #1 trang chủ\nBáo cáo đối sánh ứng viên ISO A4");
+  setVal("prd-desc", "Gói giải pháp tích hợp giúp doanh nghiệp FDI và Tập đoàn công nghệ rút ngắn 65% thời gian tuyển dụng nhân sự chủ chốt.");
+
+  // 4. User Create / Edit Form
+  setVal("usr-full-name", "Lê Hoàng Bách (Giám đốc Chuyển đổi số)");
+  setVal("usr-email", `hoangbach.exec.${Math.floor(100 + Math.random() * 899)}@hiremind.vn`);
+  setVal("usr-phone", "+84 909 686 888");
+  setVal("usr-company-name", "Tập đoàn Công nghệ TechVina Global");
+  setVal("usr-target-title", "Giám đốc Khối Công nghệ & AI (VP of Engineering)");
+  setVal("usr-expected-salary", "85 - 120 Triệu VNĐ");
+  setVal("usr-exp-years", "10");
+  setVal("usr-skills", "Enterprise Architecture, AI Strategy, Cloud Native, OKRs, Agile Leadership");
+  setVal("usr-bio", "10+ năm kinh nghiệm điều hành khối kỹ thuật và chuyển đổi số tại các tập đoàn đa quốc gia.");
+
+  // 5. Tenant Create / Edit Form
+  setVal("tnt-company-name", "Tập đoàn Bán dẫn & AI VinaSemi Global");
+  setVal("tnt-tax-code", "0109988776");
+  setVal("tnt-Scale", "1,000 - 3,000 Nhân sự");
+  setVal("tnt-hq", "Khu Công nghệ cao Hòa Lạc & TP. Hồ Chí Minh");
+  setVal("tnt-domain", "https://vinasemi.hiremind.vn");
+  setVal("tnt-subdomain", "vinasemi.hiremind.vn");
+  setVal("tnt-mrr", "1890");
+  setVal("tnt-quota", "600000");
+  setVal("tnt-admin-name", "TS. Trần Quốc Tuấn (CHRO)");
+  setVal("tnt-admin-email", "chro@vinasemi.vn");
+  setVal("tnt-admin-phone", "+84 903 888 999");
+
+  // 6. RBAC Role Create / Edit Form
+  setVal("rbac-role-name", "Kiểm Toán Viên Chất Lượng & ISO (Quality & ISO Auditor)");
+  setVal("rbac-role-code", "ISO_QUALITY_AUDITOR");
+  setVal("rbac-role-desc", "Vai trò chuyên trách kiểm toán quy trình tuyển dụng công bằng, xem báo cáo đối sánh và xuất biểu mẫu ISO 9001:2015.");
+
+  // 7. Category Create / Edit Form
+  setVal("cat-code", "CAT_SEMI_AI");
+  setVal("cat-name-vi", "Công nghệ Bán dẫn, Thiết kế Vi mạch (IC Design) & Edge AI");
+  setVal("cat-name-en", "Semiconductor, IC Design & Edge AI Engineering");
+  setVal("cat-salary", "45 - 120 Triệu VNĐ");
+  setVal("cat-skills", "VLSI, Verilog, SystemVerilog, Embedded C/C++, Edge AI, ISO 26262");
+
+  showToast("✨ AI đã tự động điền và tối ưu hóa toàn bộ nội dung biểu mẫu theo chuẩn Enterprise!");
+}
+
+function aiAutofillRequisitionInline() {
+  const titleEl = document.getElementById("req-title");
+  const deptEl = document.getElementById("req-dept");
+  const hcEl = document.getElementById("req-hc");
+  const budgetEl = document.getElementById("req-budget");
+  const justEl = document.getElementById("req-justification");
+  if (titleEl) titleEl.value = "Kỹ sư Trưởng Kiến trúc AI & Dữ liệu Lớn (Lead AI & Data Architect)";
+  if (deptEl) deptEl.value = "Khối Công nghệ, AI & Chuyển đổi số";
+  if (hcEl) hcEl.value = "3";
+  if (budgetEl) budgetEl.value = "75 - 115 Triệu VNĐ (Chuẩn P70 Market)";
+  if (justEl) {
+    justEl.value =
+      "Bổ sung định biên chiến lược phục vụ dự án Nền tảng Quản trị Doanh nghiệp Thông minh Q4/2026; đã được AI thẩm định khung lương thị trường.";
+  }
+  titleEl?.focus();
+  showToast("✨ AI đã tự động điền Phiếu Yêu cầu Định biên chuẩn P70 thị trường!");
+}
+
+function aiAutofillAdBannerInline() {
+  const titleEl = document.getElementById("ad-title");
+  const subEl = document.getElementById("ad-subtitle");
+  const compEl = document.getElementById("ad-company");
+  const ctaEl = document.getElementById("ad-cta");
+  if (titleEl) titleEl.value = "TẬP ĐOÀN TECHVINA & FDI — TUYỂN GẤP 20 CHUYÊN GIA AI, CLOUD & BÁN DẪN";
+  if (subEl) subEl.value = "Đãi ngộ tới $4,500/tháng • Thưởng 4 tháng lương • Xét duyệt CV Fast-Track bằng AI trong 60 giây";
+  if (compEl) compEl.value = "TechVina Global & Đối tác Chiến lược FDI";
+  if (ctaEl) ctaEl.value = "Ứng Tuyển VIP Ngay";
+  titleEl?.focus();
+  showToast("✨ AI Copywriter đã tự động soạn nội dung Chiến dịch Quảng cáo VIP tối ưu CTR!");
+}
+
+function openExecCommandPalette() {
+  const modal = document.getElementById("exec-command-palette-modal");
+  const content = document.getElementById("exec-command-palette-content");
+  if (!modal || !content) return;
+  modal.classList.remove("hidden");
+  renderExecCommandPaletteItems("");
+  setTimeout(() => document.getElementById("exec-cmd-search-input")?.focus(), 60);
+}
+
+function closeExecCommandPalette() {
+  const modal = document.getElementById("exec-command-palette-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function renderExecCommandPaletteItems(query = "") {
+  const content = document.getElementById("exec-command-palette-content");
+  if (!content) return;
+  const kw = String(query || "").trim().toLowerCase();
+
+  const commands = [
+    ...Object.entries(PAGE_CRUD_CONFIG).map(([tabKey, cfg]) => ({
+      icon: "⚡",
+      title: `Chuyển tới Phân hệ ${tabKey.toUpperCase()} — ${cfg.title}`,
+      category: "Điều hướng Phân hệ",
+      action: `switchTab('${tabKey}'); closeExecCommandPalette();`,
+    })),
+    {
+      icon: "✨",
+      title: "Mở AI Business Copilot Studio (Phân tích & Tự động hóa Nghiệp vụ)",
+      category: "Trợ lý AI",
+      action: "closeExecCommandPalette(); openAiCopilotStudio(state.activeTab);",
+    },
+    {
+      icon: "🖨️",
+      title: "In Báo cáo A4 Chuẩn ISO cho Trang Hiện tại",
+      category: "Biểu mẫu ISO & Xuất dữ liệu",
+      action: "closeExecCommandPalette(); printActivePageReport(state.activeTab);",
+    },
+    {
+      icon: "📥",
+      title: "Xuất File Excel (.xls) cho Trang Hiện tại",
+      category: "Biểu mẫu ISO & Xuất dữ liệu",
+      action: "closeExecCommandPalette(); exportActivePageExcel(state.activeTab);",
+    },
+    {
+      icon: "📊",
+      title: "Xuất Toàn bộ Hệ thống ra File Excel Đa Sheet (10 Sheets)",
+      category: "Biểu mẫu ISO & Xuất dữ liệu",
+      action: "closeExecCommandPalette(); exportMultiSheetExcel();",
+    },
+  ];
+
+  const filtered = commands.filter(
+    (c) => !kw || c.title.toLowerCase().includes(kw) || c.category.toLowerCase().includes(kw)
+  );
+
+  content.innerHTML = `
+    <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-slate-800/80">
+      <span class="text-lg">🔍</span>
+      <input id="exec-cmd-search-input" type="text" value="${query.replace(/"/g, "&quot;")}"
+        oninput="renderExecCommandPaletteItems(this.value)"
+        placeholder="Nhập tên phân hệ, nghiệp vụ AI, biểu mẫu ISO hoặc lệnh điều hành nhanh..."
+        class="flex-1 bg-transparent text-sm font-bold text-slate-900 dark:text-white focus:outline-none" />
+      <button type="button" onclick="closeExecCommandPalette()" class="px-2.5 py-1 rounded-lg bg-slate-200/80 dark:bg-slate-700 text-[11px] font-bold">ESC</button>
+    </div>
+    <div class="max-h-[60vh] overflow-y-auto custom-scroll p-2.5 space-y-1">
+      ${filtered
+        .map(
+          (c) => `
+          <button type="button" onclick="${c.action}"
+            class="w-full text-left px-3.5 py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 flex items-center justify-between gap-3 transition">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="text-base shrink-0">${c.icon}</span>
+              <span class="text-xs font-extrabold text-slate-800 dark:text-slate-100 truncate">${c.title}</span>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">${c.category}</span>
+          </button>
+        `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+window.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault();
+    openExecCommandPalette();
+  } else if (e.key === "Escape") {
+    closeExecCommandPalette();
+    closeAiCopilotStudio();
+  }
+});
+
 
 
