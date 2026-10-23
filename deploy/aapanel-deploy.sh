@@ -135,7 +135,11 @@ EOF
 echo "⚡ [4/6] Khởi chạy dịch vụ FastAPI Backend trên cổng ${BACKEND_PORT}..."
 export PATH=$PATH:/usr/local/bin:~/.nvm/versions/node/$(ls ~/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:/www/server/nodejs/v22.11.0/bin:/www/server/nodejs/v20.18.0/bin:/www/server/nodejs/v18.20.0/bin
 
-# Tạo systemd service đảm bảo luôn tự khởi động cùng Ubuntu
+# Tạo systemd service đảm bảo luôn tự khởi động cùng Ubuntu (Hỗ trợ cả 3 tên: joai-backend, jobai-backend, jobai)
+if [ ! -e "${PROJECT_DIR}/venv" ] && [ -d "${PROJECT_DIR}/backend/.venv" ]; then
+    ln -sf "${PROJECT_DIR}/backend/.venv" "${PROJECT_DIR}/venv" || true
+fi
+
 cat > /etc/systemd/system/jobai-backend.service <<EOF
 [Unit]
 Description=HireMind AI Recruitment FastAPI Backend (${DOMAIN})
@@ -152,11 +156,16 @@ RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
+Alias=joai-backend.service jobai.service
 EOF
+
+ln -sf /etc/systemd/system/jobai-backend.service /etc/systemd/system/joai-backend.service
+ln -sf /etc/systemd/system/jobai-backend.service /etc/systemd/system/jobai.service
 
 # Dừng tiến trình cũ nếu đang chạy qua PM2 để tránh xung đột cổng
 if command -v pm2 >/dev/null 2>&1; then
     pm2 delete jobai-backend >/dev/null 2>&1 || true
+    pm2 delete joai-backend >/dev/null 2>&1 || true
 fi
 pkill -f "uvicorn main:app.*${BACKEND_PORT}" >/dev/null 2>&1 || true
 
@@ -165,7 +174,7 @@ systemctl enable jobai-backend.service
 systemctl restart jobai-backend.service
 
 sleep 2
-curl -fsS "http://127.0.0.1:${BACKEND_PORT}/api/rbac/roles" >/dev/null 2>&1 && echo "✅ FastAPI Backend đang hoạt động ổn định tại 127.0.0.1:${BACKEND_PORT}!" || true
+curl -fsS "http://127.0.0.1:${BACKEND_PORT}/api/rbac/roles" >/dev/null 2>&1 && echo "✅ FastAPI Backend (joai-backend / jobai-backend / jobai) đang hoạt động ổn định tại 127.0.0.1:${BACKEND_PORT}!" || true
 
 # 5. Cấp phát chứng chỉ SSL Let's Encrypt cho jobai.techcorp.info.vn
 echo "🔒 [5/6] Cấp phát & Cấu hình SSL HTTPS cho https://${DOMAIN}..."
